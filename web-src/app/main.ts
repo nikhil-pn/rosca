@@ -15,7 +15,22 @@ const SITE = "https://rosca.exprmnts.fun";
 const ZERO = "0x0000000000000000000000000000000000000000";
 const UNIT = 1_000_000n;
 
-// ---------------------------------------------------------------- saved state (this device only)
+// ---------------------------------------------------------------- mode: live (real testnet use) or demo (guided, with bots)
+
+type Mode = "live" | "demo";
+const params = new URLSearchParams(location.search);
+const joinParam = params.get("join");
+const MODE: Mode = joinParam ? "live" : ((params.get("mode") as Mode | null) ?? (localStorage.getItem("rosca.mode") as Mode | null) ?? "live") === "demo" ? "demo" : "live";
+localStorage.setItem("rosca.mode", MODE);
+const DEMO = MODE === "demo";
+document.body.classList.add(DEMO ? "mode-demo" : "mode-live");
+
+function switchMode(to: Mode) {
+  localStorage.setItem("rosca.mode", to);
+  location.href = location.pathname;
+}
+
+// ---------------------------------------------------------------- saved state (this device only, one wallet per mode)
 
 interface Saved {
   mnemonic?: string;
@@ -24,7 +39,7 @@ interface Saved {
   thief: Record<string, { tx: string; status: string }>;
   sig?: number;
 }
-const KEY = "rosca.app.v1";
+const KEY = DEMO ? "rosca.app.v1" : "rosca.live.v1";
 const saved: Saved = { circles: [], thief: {}, ...(JSON.parse(localStorage.getItem(KEY) ?? "null") ?? {}) };
 const save = () => localStorage.setItem(KEY, JSON.stringify(saved));
 
