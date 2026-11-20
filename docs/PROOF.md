@@ -41,3 +41,27 @@ The release is the key step: the circle read member-2's registered ML-DSA-87 key
 precompile (`0x…0A02`) and checked their 4,627-byte signature over the payout with `pqcVerify` (`0x…0A01`).
 Without that signature no key, not the organiser's and not a stolen classical key, can move the pot.
 
+
+## The keeper: a circle that never stops
+
+`scripts/keeper.ts` runs as a service and plays five demo members (Anu, Biju, Chitra, Deepak and Esther) in one circle after another,
+one round an hour. The site at https://rosca.exprmnts.fun reads every step live from the chain. Each new circle is recorded in
+`deployments/testnet.json`.
+
+| Circle | Address | Notes |
+| --- | --- | --- |
+| Office kuri #1 | [`0xBB182372…49f39`](https://explore.qore.network/address/0xBB182372692020cee736206f3E2f1830AB649f39) | test run with 90-second rounds: 5 rounds, 5 ML-DSA-87 releases, then every member withdrew their security and dividends |
+| Family chit #2 | [`0x0A0A0D7A…e6e16`](https://explore.qore.network/address/0x0A0A0D7A765942Ef060fCcAdb51464785b3e6e16) | first circle with one-hour rounds |
+
+## The thief test
+
+Once per circle the keeper plays a thief who has stolen the round winner's classical (secp256k1) key. The thief uses the
+winner's own scoped window to call `release` with their own address as recipient. The transaction is sent with a fixed gas limit
+and no estimate, so it lands on chain and fails there.
+
+| Circle | Round | What the thief sent | Result |
+| --- | --- | --- | --- |
+| Office kuri #1 | 2 | a valid ML-DSA-87 signature, but from the thief's own key | [reverted](https://explore.qore.network/tx/0x703be9e1d1178d89b97bab28c1ae29ce33377ddcfe8b7a5e72b589eae2d0f660) |
+
+The next circle tries the other attack: the winner's real signature, replayed for the thief's address. The signed payout covers
+the recipient, so that fails as well.
