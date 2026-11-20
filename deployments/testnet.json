@@ -9,6 +9,31 @@
       "address": "0xF8cA79Bf91513e476D12d5B5B3eE92ac3806D561",
       "name": "Test run",
       "tx": "0xae0ae49ac171609f8d29f64e16e3f09f72757e7f6303f09075754ff6d6c20635"
+    },
+    {
+      "address": "0xBB182372692020cee736206f3E2f1830AB649f39",
+      "name": "Office kuri #1",
+      "tx": "0x612d6d95242790c255dac6367556467eef19fc904e8d2def02b8cb787225ce4c"
+    },
+    {
+      "address": "0x0A0A0D7A765942Ef060fCcAdb51464785b3e6e16",
+      "name": "Family chit #2",
+      "tx": "0xe9b0680cd1085f56d1c19109f0f739a36343b1c689e7c3eecf110a80a4ffb498"
+    }
+  ],
+  "live": {
+    "address": "0x0A0A0D7A765942Ef060fCcAdb51464785b3e6e16",
+    "count": 2
+  },
+  "attacks": [
+    {
+      "circle": "0xBB182372692020cee736206f3E2f1830AB649f39",
+      "round": 2,
+      "kind": "forged",
+      "thief": "0x63F29965Fec2621D2504e93fD98480520cD3809b",
+      "tx": "0x703be9e1d1178d89b97bab28c1ae29ce33377ddcfe8b7a5e72b589eae2d0f660",
+      "status": "reverted",
+      "at": "2026-11-20T15:06:57.213Z"
     }
   ]
 }
