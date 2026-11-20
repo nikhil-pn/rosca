@@ -35,3 +35,10 @@
 
 .reset-row { margin-top: 18px; }
 .linkish { color: var(--muted); font-size: 13px; text-decoration: underline; }
+
+/* On a phone the steps come first; the phone mock-up follows them. */
+@media (max-width: 900px) {
+  .layout.try { grid-template-areas: "hero" "rest" "device"; }
+  .layout.try .device { margin-top: 32px; }
+  .layout.try .rest .foot { display: none; }
+}

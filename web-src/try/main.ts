@@ -217,13 +217,19 @@ function draw() {
 
 function drawPhone() {
   const s = snap;
-  if (!s || !acc) return;
+  document.querySelector(".balance .label")!.textContent = "Your test fUSD";
+  document.querySelector(".top-bar .avatar")!.textContent = "You";
+  if (!s || !acc) {
+    $("balance").innerHTML = '$0<span class="dec">.00</span>';
+    $("gain").textContent = "no wallet yet";
+    $("card-kind").textContent = "Try";
+    $("circle-chips").innerHTML = '<button class="chip active"><span class="chip-icon">◎</span>No circle yet</button>';
+    return;
+  }
   const money = (v: bigint) => {
     const [w, d] = usd(v).slice(1).split(".");
     return `$${w}<span class="dec">.${d}</span>`;
   };
-  document.querySelector(".balance .label")!.textContent = "Your test fUSD";
-  document.querySelector(".top-bar .avatar")!.textContent = "You";
   $("balance").innerHTML = money(s.fusd);
   $("gain").textContent = `${(Number(s.qor) / 1e18).toFixed(2)} QOR`;
   $("card-kind").textContent = ["Forming", "Running", "Completed", "Dissolved"][s.phase] ?? "No circle";
@@ -380,20 +386,29 @@ async function useWallet() {
   await refresh();
 }
 
-let refreshing = false;
-async function refresh() {
-  if (refreshing) return;
-  refreshing = true;
-  try {
-    snap = await load();
-    draw();
-    drawPhone();
-    await drawTab();
-  } catch (e) {
-    console.error("Rosca try:", e);
-  } finally {
-    refreshing = false;
+let refreshing: Promise<void> | null = null;
+let again = false;
+/** Read the chain and redraw. A call made while one is running queues exactly one more pass. */
+async function refresh(): Promise<void> {
+  if (refreshing) {
+    again = true;
+    return refreshing;
   }
+  refreshing = (async () => {
+    do {
+      again = false;
+      try {
+        snap = await load();
+        draw();
+        drawPhone();
+        await drawTab();
+      } catch (e) {
+        console.error("Rosca try:", e);
+      }
+    } while (again);
+  })();
+  await refreshing;
+  refreshing = null;
 }
 
 function tickTimers() {
@@ -408,6 +423,7 @@ initTabs((t: string) => {
   void drawTab();
 });
 draw();
+drawPhone();
 if (saved.mnemonic) void useWallet();
 setInterval(() => void refresh(), 4000);
 setInterval(tickTimers, 1000);
