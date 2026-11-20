@@ -267,4 +267,70 @@ contract RoscaCircle {
         (bool ok, bytes memory ret) = address(token).call(abi.encodeCall(IERC20Minimal.transfer, (to, amount)));
         if (!ok || (ret.length != 0 && !abi.decode(ret, (bool)))) revert TokenCallFailed();
     }
+
+    // ---------------------------------------------------------------- auction
+
+    event Bid(uint256 indexed round, address indexed member, uint256 discount);
+    event SecurityApplied(uint256 indexed round, address indexed member, uint256 amount);
+    event AuctionClosed(uint256 indexed round, address indexed winner, uint256 discount, uint256 collected);
+
+    /// @notice Bid the discount you accept to take this round's pot. A higher discount wins,
+    /// as in a chit fund auction. Only members who paid this round and have not won before can bid.
+    function bid(uint256 discount) external inPhase(Phase.Running) onlyMember {
+        uint256 r = currentRound;
+        Round storage rd = _rounds[r];
+        if (rd.closed || block.timestamp > rd.bidEnd) revert TooLate(r);
+        if (hasWon[msg.sender] || !paid[r][msg.sender]) revert NotEligible(msg.sender);
+        uint256 cap = maxDiscount();
+        if (discount > cap) revert DiscountTooHigh(discount, cap);
+        if (rd.bestBidder != address(0) && discount <= rd.bestDiscount) revert BidNotHigher(discount, rd.bestDiscount);
+
+        rd.bestBidder = msg.sender;
+        rd.bestDiscount = discount;
+        emit Bid(r, msg.sender, discount);
+    }
+
+    /// @notice Close the auction once the bidding time is over. Anyone can call it.
+    /// Past winners who did not pay are covered from the security held back from their payout.
+    /// With no bid, the earliest-joined eligible member takes the pot at no discount.
+    function closeAuction() external inPhase(Phase.Running) {
+        uint256 r = currentRound;
+        Round storage rd = _rounds[r];
+        if (rd.closed) revert AlreadyClosed(r);
+        if (block.timestamp <= rd.bidEnd) revert TooEarly(r);
+
+        uint256 n = _members.length;
+        for (uint256 i; i < n; ++i) {
+            address m = _members[i];
+            if (!paid[r][m] && hasWon[m] && security[m] >= share) {
+                security[m] -= share;
+                totalSecurity -= share;
+                paid[r][m] = true;
+                paidIn[m] += share;
+                rd.collected += share;
+                emit SecurityApplied(r, m, share);
+            }
+        }
+
+        address winner = rd.bestBidder;
+        uint256 discount = rd.bestDiscount;
+        if (winner == address(0)) {
+            for (uint256 i; i < n; ++i) {
+                address m = _members[i];
+                if (!hasWon[m] && paid[r][m]) {
+                    winner = m;
+                    break;
+                }
+            }
+            discount = 0;
+        }
+        if (winner == address(0)) revert NoWinner(r);
+
+        rd.closed = true;
+        rd.closedAt = uint64(block.timestamp);
+        rd.winner = winner;
+        rd.discount = discount;
+        hasWon[winner] = true;
+        emit AuctionClosed(r, winner, discount, rd.collected);
+    }
 }
