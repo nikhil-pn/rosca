@@ -2,7 +2,7 @@
  * Rosca, the app. A visitor makes a wallet with a post-quantum key, starts a circle with two bots,
  * and plays it round by round. Everything is signed on this device; the chain is the only state.
  */
-import { deriveUnifiedAccount, generateMnemonic, type UnifiedAccount } from "@qorechain/sdk";
+import { deriveUnifiedAccount, generateMnemonic, validateMnemonic, type UnifiedAccount } from "@qorechain/sdk";
 import type { Address } from "viem";
 import * as A from "../lib/actions.ts";
 import { NET } from "../lib/qore.ts";
@@ -218,15 +218,21 @@ function renderWelcome() {
       <div class="wallet-art" aria-hidden="true">
         <div class="wallet"><div class="wcard silver"></div><div class="wcard gold"><span class="brand">Rosca</span><span class="kind">Kuri</span></div><div class="pocket"><span class="stitch"></span><span class="clasp"></span></div></div>
       </div>
+      <p class="mode-tag ${DEMO ? "demo" : "live"}">${DEMO ? "Demo mode · bots and free test money" : "Live · QoreChain testnet"}</p>
       <h1>Save together.<br>Nobody runs away with the pot.</h1>
       <ul class="points">
-        <li class="glass"><b>Pay in</b> $10 a round with two friends</li>
+        ${DEMO
+          ? `<li class="glass"><b>Pay in</b> $10 a round with two bot friends</li>
         <li class="glass"><b>Take the pot</b> once, when it's your turn or your bid wins</li>
-        <li class="glass"><b>Sign payouts</b> with a post-quantum key only you hold</li>
+        <li class="glass"><b>Sign payouts</b> with a post-quantum key only you hold</li>`
+          : `<li class="glass"><b>Create a circle</b>: you set the name, the amount, the members and how often</li>
+        <li class="glass"><b>Invite friends</b> with a link; everyone joins with their own wallet</li>
+        <li class="glass"><b>Every action is a real testnet transaction</b>, signed on your device</li>`}
       </ul>
       <button class="btn-primary block" data-act="create">Create my wallet</button>
+      ${DEMO ? "" : '<button class="btn-glass block" data-act="restore">I have a recovery phrase</button>'}
       <button class="btn-glass block" data-act="how">How it works</button>
-      <p class="fine">Free test money on the QoreChain testnet. Nothing real is at stake.</p>
+      <p class="fine">${DEMO ? "Rosca hands you free test money and two bots play with you. Nothing real is at stake." : `You fund your wallet yourself from the QoreChain testnet faucet. Just looking? <button class="link inline" data-act="to-demo">Try demo mode</button>`}</p>
     </section>`;
 }
 
@@ -403,6 +409,7 @@ async function withStep<T>(p: ReturnType<typeof progressIn>, text: string, fn: (
 }
 
 function setupFlow() {
+  if (!DEMO) return liveSetupFlow();
   const sh = openSheet(`
     <div class="tx">
       <p class="kicker">Your wallet</p>
@@ -450,6 +457,187 @@ function setupFlow() {
   if (!acc) go.click();
 }
 
+/** Live: keys on this device, then real funding from the QoreChain faucet, then key registration. */
+function liveSetupFlow() {
+  const sh = openSheet("");
+  let stop = false;
+  const step = async () => {
+    if (!acc) {
+      saved.mnemonic = generateMnemonic();
+      save();
+      acc = await deriveUnifiedAccount(saved.mnemonic, 0);
+      tab = "home";
+      renderShell();
+    }
+    const qor = await A.qorBalance(acc.evm as Address);
+    if (qor === 0n) {
+      sh.show(`
+        <div class="tx">
+          <p class="kicker">Step 1 of 2 · Fund your wallet</p>
+          <h2>Send test money to your wallet</h2>
+          <p class="lead">Your wallet is ready on this device. Fund it with a real testnet transaction: open the QoreChain faucet, paste your address, and request tokens. It sends 100 test QOR and 1,000 fUSD.</p>
+          <div class="addr-box glass"><span class="kicker">Your QoreChain address</span><code id="fund-addr">${acc.cosmos}</code><button class="btn-glass" data-copy="${acc.cosmos}">Copy address</button></div>
+          <div class="tx-actions">
+            <a class="btn-primary block" href="https://dashboard.qorechain.io/faucet" target="_blank" rel="noopener">Open the QoreChain faucet ↗</a>
+            <p class="fine center"><span class="spinner"></span> Waiting for your test money to arrive… Friends can also send QOR to this address.</p>
+            <p class="fine center">EVM address of the same wallet: <code>${short(acc.evm)}</code></p>
+          </div>
+        </div>`);
+      sh.body.querySelector("[data-copy]")!.addEventListener("click", async (e) => {
+        await navigator.clipboard?.writeText((e.currentTarget as HTMLElement).dataset.copy!);
+        toast("Address copied", "ok", 1800);
+      });
+      while (!stop && (await A.qorBalance(acc.evm as Address).catch(() => 0n)) === 0n) await new Promise((r) => setTimeout(r, 4000));
+      if (stop) return;
+      toast("Test money arrived", "ok");
+    }
+    sh.show(`
+      <div class="tx">
+        <p class="kicker">Step 2 of 2 · Your post-quantum key</p>
+        <h2>Register your post-quantum key</h2>
+        <p class="lead">One transaction puts your ML-DSA-87 public key on chain with a proof that you hold the secret key. Circles only accept members who did this, and it's what signs your payouts.</p>
+        <div class="tx-progress"></div>
+        <div class="tx-actions"><button class="btn-primary block" data-go>Register my key</button></div>
+      </div>`);
+    const go = sh.body.querySelector<HTMLButtonElement>("[data-go]")!;
+    go.addEventListener("click", async () => {
+      go.disabled = true;
+      go.innerHTML = `<span class="spinner light"></span> Registering…`;
+      const p = progressIn(sh.body.querySelector(".tx-progress")!);
+      try {
+        if (!(await A.pqcRegistered(acc!))) await withStep(p, "Registering your ML-DSA-87 key", () => A.registerKey(acc!), (h) => txLink(h, "tx"));
+        else p.step("Your key is already registered").done();
+        const bank = await A.bankBalances(acc!);
+        if (bank.fusd > 0n) await withStep(p, `Moving ${usd(bank.fusd)} fUSD into your wallet`, () => A.convertFusd(acc!, bank.fusd), (h) => txLink(h, "tx"));
+        sh.body.querySelector(".tx-actions")!.innerHTML = `<div class="done-msg">You're ready. Create a circle, or open an invite link a friend sent you.</div><button class="btn-primary block" data-next>${pendingJoin ? "Continue to the invite" : "Create a circle"}</button>`;
+        sh.body.querySelector("[data-next]")!.addEventListener("click", () => {
+          sh.close();
+          if (pendingJoin) void joinFlow(pendingJoin);
+          else startFlow();
+        });
+        await refresh();
+      } catch (e) {
+        go.disabled = false;
+        go.textContent = "Try again";
+        toast(friendly(e), "err", 6000);
+      }
+    });
+    if (await A.pqcRegistered(acc!)) go.click();
+  };
+  const close = sh.close.bind(sh);
+  sh.close = () => {
+    stop = true;
+    close();
+  };
+  step().catch((e) => toast(friendly(e), "err", 6000));
+}
+
+function restoreFlow() {
+  const sh = openSheet(`
+    <div class="tx">
+      <p class="kicker">Live wallet</p>
+      <h2>Restore your wallet</h2>
+      <p class="lead">Enter the 12 or 24 words from <b>Profile → Recovery phrase</b> on your other device. They stay on this device.</p>
+      <textarea class="field" id="phrase" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="word word word …"></textarea>
+      <div class="tx-actions"><button class="btn-primary block" data-go>Restore</button></div>
+    </div>`);
+  sh.body.querySelector("[data-go]")!.addEventListener("click", async () => {
+    const words = (sh.body.querySelector<HTMLTextAreaElement>("#phrase")!.value || "").trim().toLowerCase().split(/\s+/).join(" ");
+    if (!validateMnemonic(words)) return toast("Those words aren't a valid recovery phrase.", "err");
+    saved.mnemonic = words;
+    save();
+    acc = await deriveUnifiedAccount(words, 0);
+    sh.close();
+    tab = "home";
+    renderShell();
+    await refresh();
+    toast("Wallet restored", "ok");
+  });
+}
+
+// ---------------------------------------------------------------- invites (live)
+
+const inviteUrl = (c: string) => `${location.origin}/?join=${c}`;
+
+function inviteSheet() {
+  const c = saved.current;
+  const info = snap?.info;
+  if (!c || !info) return;
+  const url = inviteUrl(c);
+  const sh = openSheet(`
+    <div class="tx">
+      <p class="kicker">Invite friends</p>
+      <h2>${esc(info.name)}</h2>
+      <p class="lead">${snap!.members.length} of ${info.size} have joined. Send this link; your friend makes a wallet, funds it from the faucet and joins with their own post-quantum key.</p>
+      <div class="addr-box glass"><span class="kicker">Invite link</span><code>${esc(url)}</code></div>
+      <dl class="rows glass"><div><dt>Each pays</dt><dd>${usd(info.share)} ${every(info.roundLength)}</dd></div><div><dt>Members</dt><dd>${info.size}</dd></div><div><dt>Pot each round</dt><dd>${usd(info.share * BigInt(info.size))}</dd></div></dl>
+      <div class="tx-actions">
+        ${"share" in navigator ? '<button class="btn-primary block" data-share>Share link</button>' : ""}
+        <button class="btn-glass block" data-copy>Copy link</button>
+      </div>
+    </div>`);
+  const text = `Join my savings circle "${info.name}" on Rosca: ${usd(info.share)} ${every(info.roundLength)}, ${info.size} members. Nobody can run away with the pot.`;
+  sh.body.querySelector("[data-share]")?.addEventListener("click", () => void navigator.share?.({ title: "Rosca", text, url }).catch(() => {}));
+  sh.body.querySelector("[data-copy]")!.addEventListener("click", async () => {
+    await navigator.clipboard?.writeText(url);
+    toast("Invite link copied", "ok", 1800);
+  });
+}
+
+/** Someone opened an invite link. Check the circle is real, show its terms, then join with your own keys. */
+async function joinFlow(c: string) {
+  pendingJoin = c;
+  if (!(await A.isRoscaCircle(c).catch(() => false))) {
+    pendingJoin = null;
+    history.replaceState(null, "", location.pathname);
+    return toast("That invite link doesn't point to a Rosca circle.", "err", 6000);
+  }
+  if (!acc || !snap || !ready(snap)) {
+    toast("First set up your wallet, then you'll join the circle.", "info", 5000);
+    return setupFlow();
+  }
+  const info = await A.circleInfo(c as Address);
+  const members = await A.read<Address[]>(c as Address, "members");
+  const already = members.some((m) => m.toLowerCase() === acc!.evm.toLowerCase());
+  const done = () => {
+    pendingJoin = null;
+    history.replaceState(null, "", location.pathname);
+    saved.circles = [...saved.circles.filter((x) => x !== c), c as Address];
+    saved.current = c as Address;
+    save();
+    prev = null;
+  };
+  if (already) {
+    done();
+    toast(`You're already in ${info.name}`, "ok");
+    return refresh();
+  }
+  if (info.phase !== 0 || info.memberCount >= info.size) {
+    done();
+    return toast(`${info.name} is full or has already started.`, "err", 6000);
+  }
+  confirmTx({
+    title: `Join ${esc(info.name)}`,
+    lead: `Started by ${short(info.organiser)}. ${info.memberCount} of ${info.size} have joined. Round 1 starts when the circle is full.`,
+    rows: [
+      ["You pay", `${usd(info.share)} ${every(info.roundLength)}`],
+      ["For", `${info.size} rounds · ${usd(info.share * BigInt(info.size))} in total`],
+      ["Pot each round", usd(info.share * BigInt(info.size))],
+      ["Discount cap", `${info.maxDiscountBps / 100}%`],
+      ["Organiser fee", `${info.feeBps / 100}% of the pot, from discounts only`],
+      ["Your fUSD", money(snap.fusd)],
+      windowRow("this circle"),
+    ],
+    cta: "Join the circle",
+    run: async (p) => {
+      const tx = await withStep(p, "Joining through a window scoped to only this circle and fUSD", () => A.join(acc!, c as Address), (h) => txLink(h, "tx"));
+      done();
+      return tx;
+    },
+    done: () => `You're in ${esc(info.name)}.`,
+  });
+}
+
 function startFlow() {
   if (!snap || !ready(snap)) return setupFlow();
   const sh = openSheet(`
@@ -495,6 +683,7 @@ function startFlow() {
 }
 
 let bidVal = 0;
+let pendingJoin: string | null = null;
 const potOf = () => (snap?.info ? snap.info.share * BigInt(snap.info.size) : 30n * UNIT);
 const shareOf = () => snap?.info?.share ?? 10n * UNIT;
 /** Bids move in steps of 1% of the pot (at least $0.50), up to the circle's discount cap. */
@@ -509,9 +698,22 @@ function showBid() {
 
 const actions: Record<string, () => void> = {
   create: () => setupFlow(),
+  restore: () => restoreFlow(),
+  "to-demo": () => switchMode("demo"),
+  "to-live": () => switchMode("live"),
+  convert: () =>
+    confirmTx({
+      title: `Move ${usd(snap?.bankFusd ?? 0n)} fUSD`,
+      lead: "Faucets send fUSD to the chain's bank side. This moves it into your wallet as the fUSD token circles use.",
+      rows: [["From", "your bank balance"], ["To", "your wallet"], ["Signed with", "secp256k1 + ML-DSA-87"], ["Network fee", "0.1 test QOR"]],
+      cta: "Confirm and move",
+      run: (p) => withStep(p, "Moving fUSD", () => A.convertFusd(acc!, snap!.bankFusd), (h) => txLink(h, "tx")),
+      done: () => "Done. Your fUSD is ready to use.",
+    }),
   setup: () => setupFlow(),
   start: () => startFlow(),
   how: () => howSheet(),
+  invite: () => inviteSheet(),
   pay: () =>
     confirmTx({
       title: `Pay ${usd(shareOf())}`,
@@ -816,6 +1018,7 @@ async function boot() {
   }
   draw();
   await refresh();
+  if (joinParam) void joinFlow(joinParam);
   setInterval(() => void refresh(), 4000);
   setInterval(tickTimers, 1000);
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("/sw.js").catch(() => {});
