@@ -9,7 +9,7 @@
     "build": "forge build",
     "test": "forge test",
     "window": "tsx --env-file=.env scripts/window.ts",
-    "deploy:testnet": "forge script script/Counter.s.sol --rpc-url qorechain_testnet --broadcast",
+    "deploy:testnet": "forge script script/Deploy.s.sol --rpc-url qorechain_testnet --broadcast",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
