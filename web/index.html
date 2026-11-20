@@ -9,6 +9,7 @@
   <link rel="preload" href="fonts/inter-500.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/phone.css">
+  <link rel="stylesheet" href="css/wallet.css">
 </head>
 <body>
   <main class="stage">
@@ -35,6 +36,17 @@
         <div class="balance-row">
           <p class="num big" id="balance">$0<span class="dec">.00</span></p>
           <p class="gain"><span class="arrow">↗</span><span id="gain">+0.00%</span></p>
+        </div>
+      </div>
+      <div class="wallet" aria-hidden="true">
+        <div class="wcard silver"></div>
+        <div class="wcard gold">
+          <span class="brand">Rosca</span>
+          <span class="kind" id="card-kind">Kuri</span>
+        </div>
+        <div class="pocket">
+          <span class="stitch"></span>
+          <span class="clasp"></span>
         </div>
       </div>
       <!-- @body -->

@@ -21,7 +21,7 @@
 
 .balance { padding: 26px 12px 6px; }
 .balance .label { color: var(--muted); font-size: 15px; margin-bottom: 6px; }
-.balance-row { display: flex; justify-content: space-between; align-items: baseline; }
+.balance-row { display: flex; justify-content: space-between; align-items: center; }
 .big { font-size: 30px; font-weight: 500; }
 .gain { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 500; }
 .gain .arrow { width: 20px; height: 20px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; font-size: 12px; }
