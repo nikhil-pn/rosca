@@ -275,9 +275,11 @@ export async function circleInfo(c: Address): Promise<CircleInfo> {
   return { address: c, name, share, size: Number(size), roundLength: Number(roundLength), maxDiscountBps: Number(maxDiscountBps), feeBps: Number(feeBps), organiser, memberCount: Number(memberCount), phase: Number(phase) };
 }
 
-/** True only for circles the Rosca factory opened, so an invite link can't point at some other contract. */
+/** True only for circles a Rosca factory opened, so an invite link can't point at some other contract. */
 export async function isRoscaCircle(c: string): Promise<boolean> {
   if (!/^0x[0-9a-fA-F]{40}$/.test(c)) return false;
-  const all = (await pub.readContract({ address: NET.factory, abi: factoryAbi as Abi, functionName: "circles" })) as Address[];
-  return all.some((a) => a.toLowerCase() === c.toLowerCase());
+  const lists = await Promise.all(
+    [NET.factory, NET.factoryV1].map((f) => pub.readContract({ address: f, abi: factoryAbi as Abi, functionName: "circles" }) as Promise<Address[]>),
+  );
+  return lists.flat().some((a) => a.toLowerCase() === c.toLowerCase());
 }
