@@ -5,7 +5,7 @@
 > Built for QoreChain [Build Before Q-Day](https://build.qorechain.io), category **Post-Quantum dApp**.
 > Deadline: 2 December 2026, 23:59 UTC (3 December, 05:29 IST). Testnet only (`qorechain-diana`, EVM chain id 9800).
 >
-> **Live:** https://rosca-one-gilt.vercel.app · **Try it yourself:** https://rosca-one-gilt.vercel.app/try.html
+> **Live:** https://rosca.exprmnts.fun · **Try it yourself:** https://rosca.exprmnts.fun/try.html
 
 ## What a rosca is
 
@@ -46,7 +46,7 @@ Work in progress. This README is updated at each milestone.
 
 ## Try it yourself
 
-[`try.html`](https://rosca-one-gilt.vercel.app/try.html) lets anyone run a real round on the testnet in about five minutes,
+[`try.html`](https://rosca.exprmnts.fun/try.html) lets anyone run a real round on the testnet in about five minutes,
 with no wallet extension:
 
 1. The page makes a test wallet in the browser: a secp256k1 key and an ML-DSA-87 key, kept in the browser's storage only.
