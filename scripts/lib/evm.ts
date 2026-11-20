@@ -109,7 +109,10 @@ export async function gasFor(
     const est = await publicClient.estimateContractGas({ address: to, abi, functionName, args, account: acc.evm as Address });
     const padded = (est * 13n) / 10n;
     return padded < fallback ? padded : fallback;
-  } catch {
+  } catch (e) {
+    // The chain says it would revert: don't send it and pay gas for nothing.
+    const msg = e instanceof Error ? e.message : String(e);
+    if (/revert/i.test(msg)) throw new Error(`${functionName} would revert: ${msg.split("\n").find((l) => /reason|Error:/.test(l))?.trim() ?? "see contract"}`);
     return fallback;
   }
 }
