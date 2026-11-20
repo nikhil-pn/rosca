@@ -270,7 +270,7 @@ function renderShell() {
     $("screen").innerHTML = `<section class="page-pane"><h1>Activity</h1><p class="sub">Every line is a transaction on the QoreChain testnet.</p><ul class="feed glass" id="a-feed"><li class="empty">Your circle's activity shows here.</li></ul></section>`;
     ring = null;
   } else {
-    $("screen").innerHTML = `<section class="page-pane"><h1>Members</h1><p class="sub">Everyone joined with a registered ML-DSA-87 key. Only they can sign a payout.</p><ul class="people-list" id="m-list"><li class="empty glass">Start a circle to see its members.</li></ul></section>`;
+    $("screen").innerHTML = `<section class="page-pane"><h1>Members</h1><p class="sub">Everyone joined with a registered ML-DSA-87 key. Only they can sign a payout.</p><ul class="people-list" id="m-list"><li class="empty glass">Start a circle to see its members.</li></ul><button class="btn-primary block" id="m-invite" data-act="invite" hidden>Invite friends</button></section>`;
     ring = null;
   }
 }
@@ -279,7 +279,11 @@ function draw() {
   if (!acc) return renderWelcome();
   if (document.body.dataset.screen === "welcome" || !document.querySelector(".home, .page-pane")) renderShell();
   const s = snap;
-  $("pill-name").textContent = saved.current ? `Circle ${Math.max(1, saved.circles.indexOf(saved.current) + 1)}` : "No circle yet";
+  $("pill-name").textContent = saved.current
+    ? DEMO || !snap?.info
+      ? `Circle ${Math.max(1, saved.circles.indexOf(saved.current) + 1)}`
+      : snap.info.name
+    : "No circle yet";
   if (!s) return;
 
   if (tab === "home") {
@@ -312,11 +316,12 @@ function drawRing(s: Snap) {
     approved: Boolean(s.approved[i]),
     bid: r && !r.closed && r.bestBidder.toLowerCase() === m.toLowerCase() ? `−${usd(r.bestDiscount).replace(".00", "")}` : null,
   }));
-  while (view.length < 3 && s.phase <= 0) view.push({ name: "…", me: false, paid: false, winner: false, approved: false, bid: null });
+  const seats = s.info?.size ?? 3;
+  while (view.length < seats && s.phase <= 0) view.push({ name: "open seat", me: false, paid: false, winner: false, approved: false, bid: null });
   const pot = r ? (r.released ? 0n : r.collected) : 0n;
-  const label = !s.circle ? "no circle yet" : s.phase === 0 ? "forming" : s.phase >= 2 ? "complete" : `round ${s.round} of 3`;
+  const label = !s.circle ? "no circle yet" : s.phase === 0 ? `${s.members.length} of ${seats} joined` : s.phase >= 2 ? "complete" : `round ${s.round} of ${seats}`;
   ring.set({ pot: money(pot), label, members: view, potGlow: Boolean(r && !r.closed && s.paid.every(Boolean)) });
-  $("h-ring-title").textContent = s.circle ? (s.phase >= 2 ? "Circle complete" : s.phase === 0 ? "Your circle is forming" : `Round ${s.round} of 3`) : "Your circle";
+  $("h-ring-title").textContent = s.circle ? (s.phase >= 2 ? "Circle complete" : s.phase === 0 ? "Your circle is forming" : `Round ${s.round} of ${seats}`) : "Your circle";
 
   // Coins move when the chain changes: payments into the pot, a payout out of it.
   if (prev && prev.circle === s.circle && r) {
@@ -341,11 +346,13 @@ async function drawActivity() {
 
 function drawMembers(s: Snap) {
   if (!s.members.length) return;
+  const inv = document.getElementById("m-invite");
+  if (inv) inv.hidden = DEMO || s.phase !== 0;
   $("m-list").innerHTML = s.members
     .map((m, i) => {
       const nm = nameOf(m);
-      const status = s.won[i] ? "has taken the pot" : "waiting for their turn";
-      return `<li class="glass"><span class="pav${nm === "You" ? " me" : ""}">${esc(nm === "You" ? "You" : nm[0])}</span><span class="pname">${esc(nm)}${nm !== "You" ? ' <em>bot</em>' : ""}<small>${status} · ML-DSA-87 key ✓</small></span><span class="tag${s.paid[i] ? " green" : ""}">${s.paid[i] ? "paid" : "not yet"}</span></li>`;
+      const status = s.phase === 0 ? "joined" : s.won[i] ? "has taken the pot" : "waiting for their turn";
+      return `<li class="glass"><span class="pav${nm === "You" ? " me" : ""}">${esc(nm === "You" ? "You" : nm[0])}</span><span class="pname">${esc(nm)}${nm !== "You" && DEMO ? ' <em>bot</em>' : ""}<small>${status} · ML-DSA-87 key ✓</small></span><span class="tag${s.paid[i] ? " green" : ""}">${s.paid[i] ? "paid" : "not yet"}</span></li>`;
     })
     .join("");
 }
@@ -959,6 +966,8 @@ function profileSheet() {
           <button data-p="how"><span class="mi">◎</span>How it works<i>›</i></button>
           <button data-p="security"><span class="mi">⛨</span>Who can move the pot<i>›</i></button>
           <button data-p="keys"><span class="mi">⚿</span>Your keys<i>›</i></button>
+          ${!DEMO && acc ? '<button data-p="fund"><span class="mi">＋</span>Add test money<i>›</i></button><button data-p="phrase"><span class="mi">✎</span>Recovery phrase<i>›</i></button>' : ""}
+          ${DEMO ? '<button data-p="to-live"><span class="mi">◉</span>Switch to live mode<i>›</i></button>' : '<button data-p="to-demo"><span class="mi">◌</span>Switch to demo mode<i>›</i></button>'}
           <button data-p="proof"><span class="mi">✓</span>Proof on chain<i>›</i></button>
           <a href="${SITE}/live" target="_blank" rel="noopener"><span class="mi">●</span>Watch the live circle<i>↗</i></a>
           <button data-p="install"><span class="mi">⇩</span>Add Rosca to your home screen<i>›</i></button>
@@ -980,6 +989,26 @@ function profileSheet() {
       sh.show(`<div class="info"><h2>Your keys</h2><p class="lead">Both keys come from one recovery phrase stored in this browser. Clearing site data deletes them.</p>
         <dl class="rows stack glass"><div><dt>Everyday key</dt><dd>secp256k1 · signs ordinary transactions inside your scoped windows</dd></div><div><dt>Post-quantum key</dt><dd>ML-DSA-87 (NIST FIPS 204, level 5) · ${acc ? acc.pqc.publicKey.length.toLocaleString() : "2,592"}-byte public key · signs payouts and opens windows</dd></div><div><dt>Address</dt><dd><code>${acc ? esc(acc.evm) : "–"}</code></dd></div></dl>
         <p class="fine">Testnet only. Never use this wallet for anything real.</p></div>`, home);
+      return;
+    }
+    if (p === "to-live" || p === "to-demo") return switchMode(p === "to-live" ? "live" : "demo");
+    if (p === "fund" && acc) {
+      sh.show(`<div class="info"><h2>Add test money</h2><p class="lead">Request test QOR and fUSD from the QoreChain faucet to this address, or ask a friend to send some. fUSD that arrives here shows up on your home screen with a button to move it into your wallet.</p>
+        <div class="addr-box glass"><span class="kicker">Your QoreChain address</span><code>${acc.cosmos}</code><button class="btn-glass" data-copy="${acc.cosmos}">Copy address</button></div>
+        <a class="btn-primary block" href="https://dashboard.qorechain.io/faucet" target="_blank" rel="noopener">Open the QoreChain faucet ↗</a></div>`, home);
+      sh.body.querySelector("[data-copy]")?.addEventListener("click", async (e) => {
+        await navigator.clipboard?.writeText((e.currentTarget as HTMLElement).dataset.copy!);
+        toast("Address copied", "ok", 1800);
+      });
+      return;
+    }
+    if (p === "phrase") {
+      sh.show(`<div class="info"><h2>Recovery phrase</h2><p class="lead">These words are your wallet. Anyone who has them controls it. Write them down to use this wallet on another device; never share them.</p>
+        <button class="btn-glass block" data-reveal>Show my recovery phrase</button><div class="phrase glass" hidden><code>${esc(saved.mnemonic ?? "")}</code></div></div>`, home);
+      sh.body.querySelector("[data-reveal]")!.addEventListener("click", (e) => {
+        (e.currentTarget as HTMLElement).hidden = true;
+        sh.body.querySelector<HTMLElement>(".phrase")!.hidden = false;
+      });
       return;
     }
     if (p === "install") {
@@ -1078,6 +1107,9 @@ document.addEventListener("click", (e) => {
   }
 });
 $("profile-btn").addEventListener("click", () => profileSheet());
+const sw = $("mode-switch");
+sw.setAttribute("aria-checked", String(DEMO));
+sw.addEventListener("click", () => switchMode(DEMO ? "live" : "demo"));
 $("circle-pill").addEventListener("click", () => (acc ? circlesSheet() : setupFlow()));
 $("dock-plus").addEventListener("click", () => (acc ? startFlow() : setupFlow()));
 
