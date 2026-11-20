@@ -16,38 +16,16 @@ import {
   isRegisteredPqcKey,
   signProofOfPossession,
 } from "@qorechain/sdk";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
 import type { Address } from "viem";
 import { CONFIG } from "./lib/config.ts";
 import { account, ensureAccounts, memberRoles, type Role } from "./lib/accounts.ts";
 import { broadcastAs, fundFusd, fundQor } from "./lib/native.ts";
+import { readDeployments, writeDeployments } from "./lib/deployments.ts";
 import { artifact, ensureWindow, publicClient, walletFor, qorechainTestnet } from "./lib/evm.ts";
 
 const ERC20_ABI = [
   { type: "function", name: "balanceOf", stateMutability: "view", inputs: [{ name: "a", type: "address" }], outputs: [{ type: "uint256" }] },
 ] as const;
-
-export interface Deployments {
-  network: string;
-  chainId: number;
-  fusd: Address;
-  factory?: Address;
-  factoryTx?: string;
-  circles?: { address: Address; name: string; tx: string }[];
-}
-
-export function readDeployments(): Deployments {
-  if (!existsSync(CONFIG.deploymentsFile)) {
-    return { network: CONFIG.chainId, chainId: CONFIG.evmChainId, fusd: CONFIG.fusd };
-  }
-  return JSON.parse(readFileSync(CONFIG.deploymentsFile, "utf8")) as Deployments;
-}
-
-export function writeDeployments(d: Deployments): void {
-  mkdirSync(dirname(CONFIG.deploymentsFile), { recursive: true });
-  writeFileSync(CONFIG.deploymentsFile, JSON.stringify(d, null, 2) + "\n");
-}
 
 function roles(arg?: string): Role[] {
   const n = Number(arg ?? "5");
