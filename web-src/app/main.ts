@@ -51,8 +51,28 @@ const money = (v: bigint) => {
   return `$${w}<span class="dec">.${d}</span>`;
 };
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
-const nameOf = (a: string) =>
-  acc && a.toLowerCase() === acc.evm.toLowerCase() ? "You" : String(PEOPLE[a.toLowerCase()] ?? short(a)).replace(" (bot)", "");
+/** "You", a demo bot's name, or in live mode "Member 2" by join order. */
+const nameOf = (a: string) => {
+  if (acc && a.toLowerCase() === acc.evm.toLowerCase()) return "You";
+  if (DEMO) return String(PEOPLE[a.toLowerCase()] ?? short(a)).replace(" (bot)", "");
+  const i = snap?.members.findIndex((m) => m.toLowerCase() === a.toLowerCase()) ?? -1;
+  return i >= 0 ? `Member ${i + 1}` : short(a);
+};
+/** 1:05 · 3h 20m · 2d 4h */
+function left(sec: number): string {
+  if (sec <= 0) return "time's up";
+  if (sec < 3600) return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")} left`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)}h ${Math.floor((sec % 3600) / 60)}m left`;
+  return `${Math.floor(sec / 86400)}d ${Math.floor((sec % 86400) / 3600)}h left`;
+}
+/** "every 5 minutes", "weekly", "monthly"… */
+function every(sec: number): string {
+  const named: Record<number, string> = { 300: "every 5 minutes", 3600: "every hour", 86400: "daily", 604800: "weekly", 2592000: "monthly" };
+  if (named[sec]) return named[sec];
+  if (sec < 3600) return `every ${Math.round(sec / 60)} minutes`;
+  if (sec < 86400) return `every ${Math.round(sec / 3600)} hours`;
+  return `every ${Math.round(sec / 86400)} days`;
+}
 const explorerTx = (h: string) => `${NET.explorer}/tx/${h.startsWith("0x") ? h : h.toUpperCase()}`;
 const txLink = (h: string, label = "View on explorer") => `<a href="${explorerTx(h)}" target="_blank" rel="noopener">${label} ↗</a>`;
 const nowSec = () => BigInt(Math.floor(Date.now() / 1000));
@@ -75,6 +95,9 @@ interface Snap {
   needed: number;
   owed: bigint;
   stalled: boolean;
+  info?: A.CircleInfo;
+  /** Faucet fUSD still sitting on the native side, waiting to be moved into the wallet. */
+  bankFusd: bigint;
 }
 let snap: Snap | null = null;
 let prev: Snap | null = null;
@@ -82,19 +105,25 @@ let prev: Snap | null = null;
 async function load(): Promise<Snap | null> {
   if (!acc) return null;
   const me = acc.evm as Address;
-  const [qor, fusd, key] = await Promise.all([A.qorBalance(me), A.fusdBalance(me), A.pqcRegistered(acc).catch(() => false)]);
-  const s: Snap = { qor, fusd, key, phase: -1, members: [], round: 0, paid: [], approved: [], won: [], needed: 2, owed: 0n, stalled: false };
+  const [qor, fusd, key, bank] = await Promise.all([
+    A.qorBalance(me),
+    A.fusdBalance(me),
+    A.pqcRegistered(acc).catch(() => false),
+    DEMO ? Promise.resolve({ uqor: 0n, fusd: 0n }) : A.bankBalances(acc).catch(() => ({ uqor: 0n, fusd: 0n })),
+  ]);
+  const s: Snap = { qor, fusd, key, phase: -1, members: [], round: 0, paid: [], approved: [], won: [], needed: 2, owed: 0n, stalled: false, bankFusd: bank.fusd };
   const c = saved.current;
   if (!c) return s;
   s.circle = c;
-  const [members, phase, round, needed, stalled] = await Promise.all([
+  const [info, members, phase, round, needed, stalled] = await Promise.all([
+    A.circleInfo(c),
     A.read<Address[]>(c, "members"),
     A.read<number>(c, "phase"),
     A.read<bigint>(c, "currentRound"),
     A.read<number>(c, "quorumNeeded"),
     A.read<boolean>(c, "isStalled"),
   ]);
-  Object.assign(s, { members, phase, round: Number(round), needed, stalled });
+  Object.assign(s, { info, members, phase, round: Number(round), needed, stalled });
   s.won = await Promise.all(members.map((m) => A.read<boolean>(c, "hasWon", [m])));
   if (s.round >= 1) {
     const [r, r1, paid, approved] = await Promise.all([
@@ -735,8 +764,7 @@ $("dock-plus").addEventListener("click", () => (acc ? startFlow() : setupFlow())
 
 function tickTimers() {
   for (const el of document.querySelectorAll<HTMLElement>(".timer[data-end]")) {
-    const left = Number(el.dataset.end) - Math.floor(Date.now() / 1000);
-    el.textContent = left > 0 ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")} left` : "time's up";
+    el.textContent = left(Number(el.dataset.end) - Math.floor(Date.now() / 1000));
   }
 }
 
