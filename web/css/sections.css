@@ -2,7 +2,7 @@
 .chips { display: flex; gap: 10px; overflow-x: auto; margin: 6px -18px 0; padding: 4px 18px 6px; scrollbar-width: none; }
 .chips::-webkit-scrollbar { display: none; }
 .chip {
-  flex: 0 0 auto; width: 128px; height: 78px; border-radius: var(--radius-md);
+  flex: 0 0 auto; width: 140px; height: 78px; white-space: nowrap; border-radius: var(--radius-md);
   background: var(--soft); text-align: left; padding: 12px; font-size: 15px; font-weight: 500;
   display: flex; flex-direction: column; justify-content: space-between;
   transition: transform 0.15s ease, background 0.15s ease;
@@ -13,3 +13,29 @@
 .chip-icon svg { fill: currentColor; }
 .chip.active .chip-icon { background: rgba(255, 255, 255, 0.14); color: #fff; }
 .chip-icon.gold { color: #c99a48; }
+
+.round-card { margin-top: 14px; background: #fbfbfb; border: 1px solid #f0f0f1; border-radius: var(--radius-lg); padding: 16px 16px 18px; }
+.round-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.round-head h2 { font-size: 16px; font-weight: 500; }
+.live-dot { width: 26px; height: 26px; border-radius: 50%; background: #ececee; display: grid; place-items: center; }
+.live-dot::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); animation: pulse 2s infinite; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+@media (prefers-reduced-motion: reduce) { .live-dot::after { animation: none; } }
+.round-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.mid { font-size: 22px; font-weight: 500; }
+.meta { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; margin: 6px 0 12px; }
+.tag { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; background: #6c6c70; color: #fff; font-size: 11px; font-weight: 600; }
+.tag.green { background: var(--green); }
+.bar { position: relative; height: 8px; border-radius: 99px; background: #e6e6e8; }
+.bar .fill { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--blue); transition: width 0.6s ease; }
+.bar .knob { position: absolute; top: 50%; width: 14px; height: 14px; margin-left: -7px; transform: translateY(-50%); border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 3px #fff; transition: left 0.6s ease; }
+.ticks { display: flex; gap: 3px; height: 12px; align-items: stretch; }
+.ticks span { flex: 1; border-radius: 1px; background: #dcdce0; }
+.ticks span.done { background: #8e8e93; }
+
+.dock { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 0 2px; }
+.dock-pill { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--soft); }
+.dock-btn { width: 62px; height: 44px; border-radius: 999px; display: grid; place-items: center; color: #6c6c70; }
+.dock-btn svg { fill: currentColor; }
+.dock-btn.active { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+.dock-plus { width: 52px; height: 52px; border-radius: 50%; background: var(--soft); display: grid; place-items: center; color: #6c6c70; }
