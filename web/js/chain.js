@@ -52,8 +52,13 @@ function decodeAddressArray(hex) {
   return Array.from({ length: len }, (_, i) => addr(word(hex, off + 1 + i)));
 }
 
+/** Every circle from both factories, oldest first. */
 export async function circles() {
-  return decodeAddressArray(await call(CONFIG.factory, SEL.circles));
+  const [v1, v2] = await Promise.all([
+    call(CONFIG.factoryV1, SEL.circles).then(decodeAddressArray),
+    call(CONFIG.factory, SEL.circles).then(decodeAddressArray),
+  ]);
+  return [...v1, ...v2];
 }
 
 export async function circleInfo(c) {

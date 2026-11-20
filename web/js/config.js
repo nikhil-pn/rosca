@@ -2,7 +2,10 @@
 export const CONFIG = {
   evmRpc: "https://evm-testnet.qore.host",
   explorer: "https://explore.qore.network",
-  factory: "0x366d6a029d94a98ba4d93e2eb4dbf07720387d39",
+  /** Factory v2, with the audit fixes. New circles open here. */
+  factory: "0x29053772f08c30c682e0fbb5db3a3d86ac84afef",
+  /** The first factory. Its circles stay live, so the site reads both. */
+  factoryV1: "0x366d6a029d94a98ba4d93e2eb4dbf07720387d39",
   factoryBlock: 10437979,
   fusd: "0x97143B771D34ddb9130b807b135Ae675A5a963CA",
   fusdDecimals: 6,
