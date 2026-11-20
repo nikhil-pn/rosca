@@ -12,3 +12,16 @@ document.addEventListener("keydown", (e) => {
     btn.setAttribute("aria-expanded", "false");
   }
 });
+
+// Desktop home: shrink the phone so the whole hero fits the window, never larger than life.
+const phone = document.querySelector(".home-hero .phone");
+function fitPhone() {
+  if (!phone) return;
+  phone.style.zoom = "";
+  if (innerWidth <= 900) return;
+  const natural = phone.offsetHeight + 40; // phone plus the note under it
+  const room = innerHeight - 110; // nav and breathing space
+  phone.style.zoom = String(Math.max(0.55, Math.min(1, room / natural)).toFixed(3));
+}
+fitPhone();
+addEventListener("resize", fitPhone);
