@@ -1,0 +1,7 @@
+{
+  "network": "qorechain-diana",
+  "chainId": 9800,
+  "fusd": "0x97143B771D34ddb9130b807b135Ae675A5a963CA",
+  "factory": "0x366d6a029d94a98ba4d93e2eb4dbf07720387d39",
+  "factoryTx": "0xe4d460379e0c7f80a154e3e05dd248fd3250fedbe6e6501b202ef1bd856316f1"
+}
