@@ -201,14 +201,23 @@ async function step(circle: Address): Promise<"done" | "wait"> {
 const TRY_PREFIX = "Try · ";
 const TRY_MAX_AGE = 3 * 3600 * 1000;
 const tracked = new Map<Address, number>(); // circle -> when first seen
-let scanned = 0;
 
 const botScope = (): Address[] => [CONFIG.fusd, ...[...tracked.keys()].slice(-15)];
 
+const scanned = new Map<string, number>(); // factory -> circles already looked at
+
 async function discover(): Promise<void> {
   const d = readDeployments();
-  const all = (await publicClient.readContract({ address: d.factory as Address, abi: c.factoryAbi, functionName: "circles" })) as Address[];
-  const from = scanned === 0 ? Math.max(0, all.length - 40) : scanned;
+  // Visitors' circles can live on either factory: the first one, or v2 with the audit fixes.
+  for (const factory of [d.factoryV1, d.factory].filter(Boolean) as Address[]) {
+    await discoverOn(factory);
+  }
+}
+
+async function discoverOn(factory: Address): Promise<void> {
+  const all = (await publicClient.readContract({ address: factory, abi: c.factoryAbi, functionName: "circles" })) as Address[];
+  const seen = scanned.get(factory) ?? 0;
+  const from = seen === 0 ? Math.max(0, all.length - 40) : seen;
   for (const circle of all.slice(from)) {
     const name = await c.read<string>(circle, "name");
     if (!name.startsWith(TRY_PREFIX)) continue;
@@ -223,7 +232,7 @@ async function discover(): Promise<void> {
     tracked.set(circle, Date.now());
     log(`try circle found: "${name}" ${circle}`);
   }
-  scanned = all.length;
+  scanned.set(factory, all.length);
 }
 
 /** Bots lock money in several circles at once, so keep their wallets topped up (checked every 5 min). */
