@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Try Rosca · run a chit fund round on QoreChain in five minutes</title>
+  <meta name="description" content="A chit fund (kuri, kameti) on QoreChain whose pot no single key can move. Payouts need the winner's post-quantum ML-DSA-87 signature and a majority of members.">
+  <meta name="theme-color" content="#eeeeef">
+  <meta property="og:title" content="Rosca · the savings circle no one can run away with">
+  <meta property="og:description" content="A chit fund on QoreChain. The pot moves only with a majority of members and the winner's ML-DSA-87 signature, checked on chain.">
+  <meta property="og:image" content="https://rosca.exprmnts.fun/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/inter-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/story.css">
+  <link rel="stylesheet" href="css/phone.css">
+  <link rel="stylesheet" href="css/wallet.css">
+  <link rel="stylesheet" href="css/sections.css">
+  <link rel="stylesheet" href="css/tabs.css">
+  <link rel="stylesheet" href="css/try.css">
+</head>
+<body>
+  <header class="site-nav">
+    <a class="logo" href="./" aria-label="Rosca home">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="8" rx="8" ry="3.2"/><path d="M4 8v4.5c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2V8c0 1.8-3.6 3.2-8 3.2S4 9.8 4 8Z"/></svg>
+      Rosca
+    </a>
+    <nav class="links" aria-label="Sections">
+      <a href="./">Home</a>
+      <a href="./#live">Live circle</a>
+      <a href="./#proof">Proof</a>
+    </nav>
+    <a class="gh" href="https://github.com/nikhil-pn/rosca" target="_blank" rel="noopener">GitHub</a>
+  </header>
+
+  <main class="layout try" id="top">
+    <section class="hero">
+      <p class="eyebrow">Try it yourself · QoreChain testnet · about 5 minutes</p>
+      <h1>Run a round of Rosca yourself.</h1>
+      <p class="lede">Make a wallet with a post-quantum key, open a circle with two bots, pay in, try to steal the pot, then sign the payout with ML-DSA-87 and watch the chain check it.</p>
+      <p class="fine-note">Everything is signed in this browser. Keys are kept in this browser's storage and never sent anywhere. Testnet only.</p>
+    </section>
+
+    <aside class="device" aria-label="The Rosca app, live on the QoreChain testnet">
+      <section class="phone" aria-label="Rosca app">
+        <div class="status-bar" aria-hidden="true">
+          <span class="time">9:41</span>
+          <span class="icons">
+            <svg width="18" height="11" viewBox="0 0 18 11"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="6" rx="1"/><rect x="10" y="2.5" width="3" height="8.5" rx="1"/><rect x="15" y="0" width="3" height="11" rx="1"/></svg>
+            <svg width="16" height="11" viewBox="0 0 16 11"><path d="M8 2.2c2.2 0 4.2.8 5.7 2.2l1.2-1.3A10 10 0 0 0 8 .4 10 10 0 0 0 1.1 3.1l1.2 1.3A8.2 8.2 0 0 1 8 2.2Zm0 3.4c1.3 0 2.5.5 3.4 1.3l1.2-1.3A6.4 6.4 0 0 0 8 3.8a6.4 6.4 0 0 0-4.6 1.8l1.2 1.3c.9-.8 2.1-1.3 3.4-1.3Zm0 3.4c.4 0 .8.2 1.1.4L8 10.6 6.9 9.4c.3-.2.7-.4 1.1-.4Z"/></svg>
+            <svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="8" rx="2"/><rect x="23.5" y="4" width="2" height="4" rx="1" opacity=".4"/></svg>
+          </span>
+        </div>
+        <header class="top-bar">
+          <button class="icon-btn" aria-label="Rosca">
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="8" rx="8" ry="3.2"/><path d="M4 8v4.5c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2V8c0 1.8-3.6 3.2-8 3.2S4 9.8 4 8Z"/></svg>
+          </button>
+          <button class="pill" id="circle-picker">All circles
+            <svg width="10" height="14" viewBox="0 0 10 14" aria-hidden="true"><path d="M2 5l3-3 3 3M2 9l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <span class="avatar" aria-hidden="true">NP</span>
+        </header>
+        <div class="view" data-view="wallet">
+        <div class="balance">
+          <p class="label">Your savings</p>
+          <div class="balance-row">
+            <p class="num big" id="balance">$0<span class="dec">.00</span></p>
+            <p class="gain"><span class="arrow">↗</span><span id="gain">+0.00%</span></p>
+          </div>
+        </div>
+        <div class="wallet" aria-hidden="true">
+          <div class="wcard silver"></div>
+          <div class="wcard gold">
+            <span class="brand">Rosca</span>
+            <span class="kind" id="card-kind">Kuri</span>
+          </div>
+          <div class="pocket">
+            <span class="stitch"></span>
+            <span class="clasp"></span>
+          </div>
+        </div>
+        <nav class="chips" id="circle-chips" aria-label="Your circles">
+          <button class="chip active"><span class="chip-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="4" r="2.2"/><circle cx="19" cy="15" r="2.2"/><circle cx="5" cy="15" r="2.2"/></svg>
+          </span>Office kuri</button>
+          <button class="chip"><span class="chip-icon gold">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.6-4.6 4.1 1.4 6L12 16.2 6.5 19.3l1.4-6L3.3 9.2l6.1-.6Z"/></svg>
+          </span>Family chit</button>
+          <button class="chip"><span class="chip-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 3v4M16 3v4M4 10h16" stroke="currentColor" stroke-width="2"/></svg>
+          </span>Friends kameti</button>
+        </nav>
+        <article class="round-card" aria-live="polite">
+          <header class="round-head">
+            <h2 id="round-title">This round</h2>
+            <span class="live-dot" id="round-state" title="Live on QoreChain testnet"></span>
+          </header>
+          <div class="round-grid">
+            <div>
+              <p class="num mid" id="pot">$0<span class="dec">.00</span></p>
+              <p class="meta"><span class="tag green" id="paid-tag">0 of 0</span> paid in</p>
+              <div class="bar"><span class="fill" id="paid-bar" style="width:0%"></span><span class="knob" id="paid-knob" style="left:0%"></span></div>
+            </div>
+            <div>
+              <p class="num mid" id="share">$0<span class="dec">.00</span></p>
+              <p class="meta"><span class="tag" id="round-tag">round 0</span> your share</p>
+              <div class="ticks" id="ticks" aria-hidden="true"></div>
+            </div>
+          </div>
+        </article>
+        </div>
+        <div class="view" data-view="activity" hidden>
+          <h2 class="view-title">Activity</h2>
+          <ul class="feed mini" id="phone-feed"><li class="empty">Loading…</li></ul>
+        </div>
+        <div class="view" data-view="members" hidden>
+          <h2 class="view-title">Members</h2>
+          <ul class="people" id="people"><li class="empty">Loading…</li></ul>
+          <p class="view-note">Every member joined with a registered ML-DSA-87 key. Payouts need their signature.</p>
+        </div>
+        <footer class="dock">
+          <div class="dock-pill">
+            <button class="dock-btn active" data-tab="wallet" aria-label="Wallet">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3.5"/><path d="M7 6V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+            <button class="dock-btn" data-tab="activity" aria-label="Activity">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 20V5M8 5 4 9M8 5l4 4M16 4v15m0 0 4-4m-4 4-4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="dock-btn" data-tab="members" aria-label="Members">
+              <svg width="22" height="20" viewBox="0 0 26 22" aria-hidden="true"><circle cx="8" cy="8" r="6" opacity=".55"/><circle cx="17" cy="11" r="6" opacity=".35"/><circle cx="13" cy="17" r="4" opacity=".25"/></svg>
+            </button>
+          </div>
+          <a class="dock-plus" href="#trysteps" aria-label="Your steps">
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </a>
+        </footer>
+            </section>
+      <p class="device-note"><span class="dot"></span><span id="device-note">Your circle will show here</span></p>
+    </aside>
+
+    <div class="rest">
+      <ol class="trysteps" id="trysteps">
+          <li data-step="wallet" class="locked"><span class="n">1</span><div class="body"><h3>Make your wallet</h3><p>A fresh test wallet is made in this browser: a secp256k1 key for ordinary transactions and an <b>ML-DSA-87</b> post-quantum key for payouts. Both stay in this browser only.</p><div class="act"><button class="btn dark" data-do="wallet">Create my test wallet</button></div><div class="out" aria-live="polite"></div></div></li>
+          <li data-step="money" class="locked"><span class="n">2</span><div class="body"><h3>Get test money</h3><p>Rosca's faucet sends 2 test QOR for gas and 40 fUSD, the fest's test dollar. Neither has any value.</p><div class="act"><button class="btn dark" data-do="money">Get 2 QOR + 40 fUSD</button></div><div class="out" aria-live="polite"></div></div></li>
+          <li data-step="key" class="locked"><span class="n">3</span><div class="body"><h3>Register your post-quantum key</h3><p>Your ML-DSA-87 public key goes on chain with a proof that you hold the secret key. Circles only accept members who did this.</p><div class="act"><button class="btn dark" data-do="key">Register my ML-DSA-87 key</button></div><div class="out" aria-live="polite"></div></div></li>
+          <li data-step="circle" class="locked"><span class="n">4</span><div class="body"><h3>Open your circle</h3><p>A circle for three: you and two bots run by Rosca. You open a window scoped to the factory, create the circle, then a window scoped to <i>only</i> your circle and fUSD, and join first.</p><div class="act"><button class="btn dark" data-do="circle">Open a 3-person circle</button></div><div class="out" aria-live="polite"></div></div></li>
+          <li data-step="pay" class="locked"><span class="n">5</span><div class="body"><h3>Pay round 1, and bid if you like</h3><p>Everyone pays $10. Members who need the money now bid the discount they accept. The bots don't bid, and you joined first, so the pot is yours either way. A discount you bid is shared out to everyone.</p><div class="act"><button class="btn dark" data-do="pay">Pay $10</button></div><div class="out" aria-live="polite"></div></div></li>
+          <li data-step="approve" class="locked"><span class="n">6</span><div class="body"><h3>Close the auction and approve</h3><p>Bidding lasts two minutes. Then anyone can close the auction, and a majority (2 of 3) must approve the payout. One bot approves at once; the second vote can be yours.</p><div class="act"><button class="btn dark" data-do="approve">Close the auction</button></div><div class="out" aria-live="polite"></div></div></li>
+          <li data-step="thief" class="locked"><span class="n">7</span><div class="body"><h3>Be the thief</h3><p>Try to send the pot to a stranger instead of yourself, reusing your own real signature. The signature names the recipient, so the contract refuses it on chain.</p><div class="act"><button class="btn dark" data-do="thief">Send the pot to a stranger</button></div><div class="out" aria-live="polite"></div></div></li>
+          <li data-step="release" class="locked"><span class="n">8</span><div class="body"><h3>Sign the payout and take the pot</h3><p>Your browser signs the payout (circle, round, recipient, amount, deadline) with your ML-DSA-87 key. The contract checks it with <code>pqcVerify</code> and pays you.</p><div class="act"><button class="btn dark" data-do="release">Sign with ML-DSA-87 and release</button></div><div class="out" aria-live="polite"></div></div></li>
+          <li data-step="rest" class="locked"><span class="n">9</span><div class="body"><h3>Finish the circle</h3><p>The bots win rounds 2 and 3. Pay them if you like; if you don't, the security held back from your payout covers you. When the circle is complete, take back what is yours.</p><div class="act"><button class="btn dark" data-do="rest">Pay this round</button></div><div class="out" aria-live="polite"></div></div></li>
+      </ol>
+      <p class="reset-row"><button class="linkish" id="reset">Forget this test wallet and start over</button></p>
+      <footer class="foot">
+        <p>Rosca · built for QoreChain's <i>Build Before Q-Day</i> by Nikhil and Hina · MIT license</p>
+        <p><a href="./">Home</a> · <a href="https://github.com/nikhil-pn/rosca" target="_blank" rel="noopener">GitHub</a> · <a href="https://build.qorechain.io/p/rosca" target="_blank" rel="noopener">Project page</a></p>
+        <p class="fine">Testnet only. QOR and fUSD here have no value.</p>
+      </footer>
+    </div>
+  </main>
+  <script type="module" src="js/try.js"></script>
+</body>
+</html>

@@ -18,6 +18,9 @@ export const PEOPLE = {
   "0x2a984e5167777e90735aa039782ec1bc3f2896be": "Deepak",
   "0x420e316e1bd1ca7915872cd7307623afcb901f73": "Esther",
   "0x0ec42d73ed8a38dd6573d3ca10212952672f8a0e": "The organiser",
+  // The two bots that join visitors' circles on the "Try it yourself" page.
+  "0x43852c8c1370aa794207475e9b83eb5c59797863": "Ravi (bot)",
+  "0x5c98e56d59878248320971f56a701c28de4bce91": "Meera (bot)",
 };
 
 export const who = (a) => PEOPLE[a.toLowerCase()] ?? `${a.slice(0, 6)}…${a.slice(-4)}`;
