@@ -10,7 +10,8 @@
     "test": "forge test",
     "window": "tsx --env-file=.env scripts/window.ts",
     "deploy:testnet": "forge script script/Deploy.s.sol --rpc-url qorechain_testnet --broadcast",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "rosca": "tsx scripts/rosca.ts"
   },
   "dependencies": {
     "@cosmjs/stargate": "^0.39.0",
