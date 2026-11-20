@@ -93,6 +93,27 @@ async function waitForWindow(acc: UnifiedAccount): Promise<void> {
   throw new Error(`window for ${acc.evm} did not go live`);
 }
 
+/**
+ * The testnet bills half of the gas limit whatever a call really uses, so a loose limit wastes QOR.
+ * Estimate the call and add a margin; fall back to `fallback` if the estimate fails.
+ */
+export async function gasFor(
+  acc: UnifiedAccount,
+  to: Address,
+  abi: Abi,
+  functionName: string,
+  args: readonly unknown[],
+  fallback: bigint,
+): Promise<bigint> {
+  try {
+    const est = await publicClient.estimateContractGas({ address: to, abi, functionName, args, account: acc.evm as Address });
+    const padded = (est * 13n) / 10n;
+    return padded < fallback ? padded : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 /** Send a contract call and wait for it. Throws if it reverts. */
 export async function send(
   acc: UnifiedAccount,
@@ -100,9 +121,10 @@ export async function send(
   abi: Abi,
   functionName: string,
   args: readonly unknown[] = [],
-  gas = 1_500_000n,
+  maxGas = 1_500_000n,
 ): Promise<Hex> {
   const wallet = walletFor(acc);
+  const gas = await gasFor(acc, to, abi, functionName, args, maxGas);
   const hash = await wallet.writeContract({ address: to, abi, functionName, args, gas, chain: qorechainTestnet });
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
   if (receipt.status !== "success") throw new Error(`${functionName} reverted: ${hash}`);
