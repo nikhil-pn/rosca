@@ -24,6 +24,7 @@ const SEL = {
   getRound: "0x8f1327c0",
   members: "0xbdd4d18d",
   paid: "0xa031fb7f",
+  quorumNeeded: "0xcb571211",
 };
 
 const word = (hex, i) => hex.slice(2 + i * 64, 2 + (i + 1) * 64);
@@ -88,4 +89,33 @@ export async function members(c) {
 
 export async function hasPaid(c, r, member) {
   return uint(word(await call(c, SEL.paid + pad(r) + padAddr(member)), 0)) === 1n;
+}
+
+// ---------------------------------------------------------------- blocks and logs
+
+export const blockNumber = async () => Number(BigInt(await rpc("eth_blockNumber", [])));
+
+const blockTimes = new Map();
+export async function blockTime(n) {
+  if (!blockTimes.has(n)) {
+    const b = await rpc("eth_getBlockByNumber", ["0x" + n.toString(16), false]);
+    blockTimes.set(n, Number(BigInt(b.timestamp)));
+  }
+  return blockTimes.get(n);
+}
+
+/** Logs of `addresses` over the last `span` blocks (the RPC allows 10,000 per query). */
+export async function recentLogs(addresses, span = 9999) {
+  const head = await blockNumber();
+  const from = Math.max(head - span, CONFIG.factoryBlock);
+  return rpc("eth_getLogs", [{ fromBlock: "0x" + from.toString(16), toBlock: "latest", address: addresses }]);
+}
+
+export async function receiptStatus(hash) {
+  const r = await rpc("eth_getTransactionReceipt", [hash]);
+  return r ? (r.status === "0x1" ? "success" : "reverted") : "pending";
+}
+
+export async function quorumNeeded(c) {
+  return Number(uint(word(await call(c, SEL.quorumNeeded), 0)));
 }
