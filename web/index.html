@@ -140,7 +140,65 @@
     </aside>
 
     <div class="rest">
-      <!-- @sections -->
+      <section class="block" id="how">
+        <h2>How a round works</h2>
+        <p class="sub">Five steps, every round, like a chit fund you already know. The highlighted step is where the live circle is right now.</p>
+        <ol class="steps" id="steps">
+          <li data-step="pay"><span class="n">1</span><div><h3>Pay</h3><p>Every member pays the monthly share into the circle. Only the contract holds it.</p></div></li>
+          <li data-step="bid"><span class="n">2</span><div><h3>Bid</h3><p>Members who need money now bid the discount they will accept. The highest discount wins, as in a real chit auction, capped at 30%.</p></div></li>
+          <li data-step="close"><span class="n">3</span><div><h3>Close</h3><p>When bidding ends, anyone can close the auction. With no bids, the earliest member who has not won yet takes the pot.</p></div></li>
+          <li data-step="approve"><span class="n">4</span><div><h3>Approve</h3><p>A majority of members approve the payout.</p></div></li>
+          <li data-step="release"><span class="n">5</span><div><h3>Release</h3><p>The winner signs the payout with their <b>ML-DSA-87</b> key. The contract checks it on chain with <code>pqcVerify</code>, pays the winner and shares the discount out to every member.</p></div></li>
+        </ol>
+        <p class="aside">Winners keep paying: part of their pot is held back against their future shares. If a round stalls, members can dissolve the circle and take back what they paid in.</p>
+      </section>
+
+      <section class="block" id="live">
+        <h2>Live on the QoreChain testnet</h2>
+        <p class="sub">Five demo members run a real circle around the clock: one round an hour. Every line below is an on-chain transaction.</p>
+        <div class="feed-card">
+          <header class="feed-head">
+            <span id="feed-circle">Loading the circle…</span>
+            <span class="feed-timer" id="feed-timer"></span>
+          </header>
+          <ul class="feed" id="feed"></ul>
+        </div>
+      </section>
+
+      <section class="block" id="security">
+        <h2>Who can move the pot?</h2>
+        <p class="sub">Only the winner and a majority of members, together. Nobody can do it alone.</p>
+        <div class="who">
+          <div class="who-row no"><span class="mark">✕</span><div><h3>The organiser</h3><p>Opens the circle and nothing else. The contract has no owner, no admin, no upgrade and no withdraw function.</p></div></div>
+          <div class="who-row no"><span class="mark">✕</span><div><h3>A thief with a member's wallet key</h3><p>A stolen secp256k1 key cannot make an ML-DSA-87 signature. Each member's EVM window is also scoped to this circle and fUSD, and only their post-quantum key can open a wider one.</p></div></div>
+          <div class="who-row no"><span class="mark">✕</span><div><h3>A future quantum computer</h3><p>It could recover an ECDSA key from its public key. It cannot forge ML-DSA-87 (NIST FIPS 204, security level 5).</p></div></div>
+          <div class="who-row yes"><span class="mark">✓</span><div><h3>The winner, with a majority</h3><p>The payout needs most members' approvals and the winner's ML-DSA-87 signature over this circle, this round, the recipient, the amount and a deadline.</p></div></div>
+        </div>
+        <div class="thief">
+          <h3>The thief test, run for real</h3>
+          <p>Once per circle the keeper plays a thief who has stolen the winner's classical key. The thief sends <code>release</code> to their own address, either with a signature from their own ML-DSA-87 key or with the winner's real signature replayed for another recipient. Every attempt lands on chain and fails.</p>
+          <ul class="attempts" id="attempts"><li class="empty">The first attempt runs in round 2 of the live circle.</li></ul>
+        </div>
+      </section>
+
+      <section class="block" id="proof">
+        <h2>Proof, for the judges</h2>
+        <p class="sub">Each requirement of the Post-Quantum dApp category, and where to check it.</p>
+        <div class="proof">
+          <div class="proof-row"><h3>pqcVerify on chain</h3><p><code>release</code> reads the winner's key from <code>pqcKeyStatus</code> (0x…0A02) and verifies their 4,627-byte ML-DSA-87 signature with <code>pqcVerify</code> (0x…0A01).</p><a href="https://github.com/nikhil-pn/rosca/blob/main/src/libraries/PqcGate.sol" target="_blank" rel="noopener">PqcGate.sol ↗</a></div>
+          <div class="proof-row"><h3>Post-quantum key to join</h3><p><code>join</code> only accepts accounts with a registered ML-DSA-87 key and proof of possession.</p><a href="https://github.com/nikhil-pn/rosca/blob/main/src/RoscaCircle.sol" target="_blank" rel="noopener">RoscaCircle.sol ↗</a></div>
+          <div class="proof-row"><h3>Scoped EVM window</h3><p>Each member opens a window limited to the circle and the fUSD token, signed hybrid with their post-quantum key.</p><a href="https://github.com/nikhil-pn/rosca/blob/main/scripts/lib/evm.ts" target="_blank" rel="noopener">evm.ts ↗</a></div>
+          <div class="proof-row"><h3>Foundry tests</h3><p>61 unit, fuzz and invariant tests: a stolen classical key can't redirect the pot, the organiser can't take it, and money is conserved over 128,000 random actions.</p><a href="https://github.com/nikhil-pn/rosca/tree/main/test" target="_blank" rel="noopener">test/ ↗</a></div>
+          <div class="proof-row"><h3>Live transactions</h3><p>The factory, the first full round and every circle the keeper runs, with explorer links.</p><a href="https://github.com/nikhil-pn/rosca/blob/main/docs/PROOF.md" target="_blank" rel="noopener">PROOF.md ↗</a></div>
+          <div class="proof-row"><h3>Two-stage QCAI audit</h3><p>Report before fixes and report after fixes.</p><span class="soon" id="audit-link">in progress</span></div>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <p>Rosca · built for QoreChain's <i>Build Before Q-Day</i> by Nikhil and Hina · MIT license</p>
+        <p><a href="https://github.com/nikhil-pn/rosca" target="_blank" rel="noopener">GitHub</a> · <a href="https://build.qorechain.io/p/rosca" target="_blank" rel="noopener">Project page</a> · <a id="factory-link" href="https://explore.qore.network/address/0x366d6a029d94a98ba4d93e2eb4dbf07720387d39" target="_blank" rel="noopener">Factory on the explorer</a></p>
+        <p class="fine">Testnet only. fUSD is the fest's test dollar and has no value.</p>
+      </footer>
     </div>
   </main>
   <script type="module" src="js/app.js"></script>
