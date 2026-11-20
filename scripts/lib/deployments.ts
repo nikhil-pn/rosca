@@ -13,6 +13,10 @@ export interface Deployments {
   factory?: Address;
   factoryTx?: string;
   circles?: { address: Address; name: string; tx: string }[];
+  /** The circle the keeper is running now, and how many it has opened. */
+  live?: { address: Address; count: number };
+  /** Thief attempts sent on purpose by the keeper. Each one reverts on chain. */
+  attacks?: { circle: Address; round: number; kind: string; thief: Address; tx: string; status: string; at: string }[];
 }
 
 export function readDeployments(): Deployments {
