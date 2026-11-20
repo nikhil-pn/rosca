@@ -1,0 +1,15 @@
+/* Circle chips, the round card and the bottom bar. */
+.chips { display: flex; gap: 10px; overflow-x: auto; margin: 6px -18px 0; padding: 4px 18px 6px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto; width: 128px; height: 78px; border-radius: var(--radius-md);
+  background: var(--soft); text-align: left; padding: 12px; font-size: 15px; font-weight: 500;
+  display: flex; flex-direction: column; justify-content: space-between;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.chip:active { transform: scale(0.97); }
+.chip.active { background: var(--dark); color: #fff; }
+.chip-icon { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: #fff; color: var(--ink); }
+.chip-icon svg { fill: currentColor; }
+.chip.active .chip-icon { background: rgba(255, 255, 255, 0.14); color: #fff; }
+.chip-icon.gold { color: #c99a48; }
