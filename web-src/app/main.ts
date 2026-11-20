@@ -638,8 +638,109 @@ async function joinFlow(c: string) {
   });
 }
 
+const CADENCES: [number, string, string][] = [
+  [300, "5 min", "test"],
+  [3600, "Hourly", "test"],
+  [86400, "Daily", ""],
+  [604800, "Weekly", ""],
+  [2592000, "Monthly", "like a real chit"],
+];
+
+/** Live: the organiser fixes the terms (name, amount, members, how often, discount cap, fee), then invites friends. */
+function createFlow() {
+  const f = { name: "Office kuri", share: 25, size: 5, round: 2592000, cap: 3000, fee: 200 };
+  const seg = (key: string, opts: [number, string, string?][], cur: number) =>
+    `<div class="seg glass" data-seg="${key}">${opts.map(([v, l, sub]) => `<button type="button" data-v="${v}" class="${v === cur ? "on" : ""}">${l}${sub ? `<small>${sub}</small>` : ""}</button>`).join("")}</div>`;
+  const sh = openSheet(`
+    <div class="tx create">
+      <p class="kicker">New circle · QoreChain testnet</p>
+      <h2>Create a circle</h2>
+      <label class="fl">Name<input class="field" id="c-name" maxlength="40" value="${f.name}" autocomplete="off"></label>
+      <label class="fl">Each member pays, per round
+        <div class="amount glass"><span>$</span><input id="c-share" type="number" inputmode="decimal" min="1" max="10000" step="1" value="${f.share}"><span class="unit">fUSD</span></div>
+      </label>
+      ${seg("share", [[10, "$10"], [25, "$25"], [50, "$50"], [100, "$100"]], f.share)}
+      <div class="fl">Members
+        <div class="stepper glass big"><button type="button" data-size="-1" aria-label="Fewer">−</button><span id="c-size">${f.size}</span><button type="button" data-size="1" aria-label="More">+</button></div>
+      </div>
+      <div class="fl">How often${seg("round", CADENCES, f.round)}</div>
+      <div class="fl">Biggest discount a bidder can take${seg("cap", [[1000, "10%"], [2000, "20%"], [3000, "30%"], [4000, "40%"]], f.cap)}</div>
+      <div class="fl">Organiser fee, taken only from discounts${seg("fee", [[0, "None"], [100, "1%"], [200, "2%"], [500, "5%"]], f.fee)}</div>
+      <div class="summary glass" id="c-sum"></div>
+      <div class="tx-progress" hidden></div>
+      <div class="tx-actions"><button class="btn-primary block" data-go>Create circle</button></div>
+    </div>`);
+  const q = (sel: string) => sh.body.querySelector<HTMLElement>(sel)!;
+  const sum = () => {
+    const pot = f.share * f.size;
+    const cad = CADENCES.find((c) => c[0] === f.round)!;
+    const unit = f.round === 2592000 ? "months" : f.round === 604800 ? "weeks" : f.round === 86400 ? "days" : f.round === 3600 ? "hours" : "";
+    const lasts = unit ? `${f.size} ${unit}` : `about ${Math.round((f.size * f.round) / 60)} minutes`;
+    q("#c-sum").innerHTML = `
+      <div><b>$${pot.toLocaleString()}</b><span>pot each round</span></div>
+      <div><b>$${pot.toLocaleString()}</b><span>each member pays in total</span></div>
+      <div><b>${lasts}</b><span>${f.size} rounds, ${cad[1].toLowerCase()}</span></div>
+      <p>Everyone takes the pot once. A bidder still gets at least $${(pot * (1 - f.cap / 10000)).toLocaleString(undefined, { maximumFractionDigits: 2 })}. You have ${usd(snap!.fusd)} fUSD.</p>`;
+  };
+  sh.body.addEventListener("click", (e) => {
+    const t = e.target as HTMLElement;
+    const b = t.closest<HTMLElement>("[data-v]");
+    const g = b?.closest<HTMLElement>("[data-seg]");
+    if (b && g) {
+      for (const x of g.querySelectorAll("button")) x.classList.toggle("on", x === b);
+      const v = Number(b.dataset.v);
+      if (g.dataset.seg === "share") {
+        f.share = v;
+        sh.body.querySelector<HTMLInputElement>("#c-share")!.value = String(v);
+      } else (f as Record<string, unknown>)[g.dataset.seg!] = v;
+      sum();
+    }
+    const z = t.closest<HTMLElement>("[data-size]");
+    if (z) {
+      f.size = Math.min(12, Math.max(2, f.size + Number(z.dataset.size)));
+      q("#c-size").textContent = String(f.size);
+      sum();
+    }
+  });
+  sh.body.querySelector<HTMLInputElement>("#c-share")!.addEventListener("input", (e) => {
+    f.share = Math.max(0, Number((e.target as HTMLInputElement).value) || 0);
+    for (const x of sh.body.querySelectorAll('[data-seg="share"] button')) x.classList.toggle("on", Number((x as HTMLElement).dataset.v) === f.share);
+    sum();
+  });
+  sum();
+  const go = q("[data-go]") as HTMLButtonElement;
+  go.addEventListener("click", async () => {
+    f.name = (sh.body.querySelector<HTMLInputElement>("#c-name")!.value || "").trim();
+    if (!f.name) return toast("Give your circle a name.", "err");
+    if (/^Try · /.test(f.name)) return toast("Pick another name.", "err");
+    if (!(f.share >= 1 && f.share <= 10000)) return toast("Each member's share must be between $1 and $10,000.", "err");
+    go.disabled = true;
+    go.innerHTML = `<span class="spinner light"></span> Creating…`;
+    const pEl = q(".tx-progress");
+    pEl.hidden = false;
+    const p = progressIn(pEl);
+    try {
+      await withStep(p, "Opening a window to the Rosca factory, signed with both keys", () => A.ensureWindow(acc!, [NET.factory]));
+      const made = await withStep(p, `Creating "${f.name}"`, () => A.createCircle(acc!, { name: f.name, share: f.share, size: f.size, roundSeconds: f.round, maxDiscountBps: f.cap, feeBps: f.fee }), (m) => txLink(m.tx, "tx"));
+      saved.circles = [...saved.circles.filter((c) => c !== made.address), made.address];
+      saved.current = made.address;
+      save();
+      await withStep(p, "Joining as the first member, through a window scoped to only this circle and fUSD", () => A.join(acc!, made.address), (h) => txLink(h, "tx"));
+      prev = null;
+      await refresh();
+      sh.close();
+      inviteSheet();
+    } catch (e) {
+      go.disabled = false;
+      go.textContent = "Try again";
+      toast(friendly(e), "err", 6000);
+    }
+  });
+}
+
 function startFlow() {
   if (!snap || !ready(snap)) return setupFlow();
+  if (!DEMO) return createFlow();
   const sh = openSheet(`
     <div class="tx">
       <p class="kicker">New circle</p>
@@ -664,7 +765,7 @@ function startFlow() {
     const p = progressIn(pEl);
     try {
       await withStep(p, "Opening a window to the Rosca factory, signed with both keys", () => A.ensureWindow(acc!, [NET.factory]));
-      const made = await withStep(p, "Creating your circle", () => A.createCircle(acc!, `Try · ${acc!.evm.slice(2, 8)}`), (m) => txLink(m.tx, "tx"));
+      const made = await withStep(p, "Creating your circle", () => A.createCircle(acc!, { name: `Try · ${acc!.evm.slice(2, 8)}`, share: 10, size: 3, roundSeconds: 120, maxDiscountBps: 3000, feeBps: 200 }), (m) => txLink(m.tx, "tx"));
       saved.circles = [...saved.circles.filter((c) => c !== made.address), made.address];
       saved.current = made.address;
       save();
