@@ -26,6 +26,7 @@ const SEL = {
   paid: "0xa031fb7f",
   quorumNeeded: "0xcb571211",
   hasWon: "0xa52b2b88",
+  organiser: "0x7e537486",
 };
 
 const word = (hex, i) => hex.slice(2 + i * 64, 2 + (i + 1) * 64);
@@ -56,15 +57,16 @@ export async function circles() {
 }
 
 export async function circleInfo(c) {
-  const [name, share, size, currentRound, phase, memberCount] = await Promise.all([
+  const [name, share, size, currentRound, phase, memberCount, organiser] = await Promise.all([
     call(c, SEL.name).then(decodeString),
     call(c, SEL.share).then((h) => uint(word(h, 0))),
     call(c, SEL.size).then((h) => Number(uint(word(h, 0)))),
     call(c, SEL.currentRound).then((h) => Number(uint(word(h, 0)))),
     call(c, SEL.phase).then((h) => Number(uint(word(h, 0)))),
     call(c, SEL.memberCount).then((h) => Number(uint(word(h, 0)))),
+    call(c, SEL.organiser).then((h) => addr(word(h, 0))),
   ]);
-  return { address: c, name, share, size, currentRound, phase, memberCount };
+  return { address: c, name, share, size, currentRound, phase, memberCount, organiser };
 }
 
 export async function round(c, r) {
