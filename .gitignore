@@ -7,3 +7,4 @@ cache/
 broadcast/*/31337/
 lib/
 *.key
+.scratch/
