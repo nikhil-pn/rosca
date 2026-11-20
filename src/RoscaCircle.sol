@@ -438,4 +438,81 @@ contract RoscaCircle {
         claimable[winner] += dividend - each * n;
         totalClaimable += dividend;
     }
+
+    // ---------------------------------------------------------------- withdrawing and dissolving
+
+    event Withdrawn(address indexed member, uint256 amount);
+    event Dissolved(uint256 indexed round, uint256 refundPool, uint256 refundBase);
+
+    /// @notice True if the current round has stalled long enough for members to dissolve the circle.
+    function isStalled() public view returns (bool) {
+        if (phase != Phase.Running) return false;
+        Round storage rd = _rounds[currentRound];
+        if (!rd.closed) return block.timestamp > uint256(rd.bidEnd) + graceLength;
+        return !rd.released && block.timestamp > uint256(rd.closedAt) + graceLength;
+    }
+
+    /// @notice What a member put in minus what they took out (never below zero).
+    function netContribution(address m) public view returns (uint256) {
+        uint256 inAmt = paidIn[m];
+        uint256 outAmt = paidOut[m];
+        return inAmt > outAmt ? inAmt - outAmt : 0;
+    }
+
+    /// @notice A member's share of the refund pool after the circle was dissolved.
+    function refundShare(address m) public view returns (uint256) {
+        if (phase != Phase.Dissolved || refunded[m] || refundBase == 0) return 0;
+        return (refundPool * netContribution(m)) / refundBase;
+    }
+
+    /// @notice What `m` can withdraw now: dividends, plus security once the circle has ended,
+    /// plus a refund share if it was dissolved.
+    function withdrawable(address m) public view returns (uint256 amount) {
+        amount = claimable[m];
+        if (phase == Phase.Completed || phase == Phase.Dissolved) amount += security[m];
+        amount += refundShare(m);
+    }
+
+    /// @notice Withdraw your own dividends, security and refund. Money only ever goes to the caller.
+    function withdraw() external nonReentrant onlyMember {
+        uint256 amount = claimable[msg.sender];
+        if (amount != 0) {
+            claimable[msg.sender] = 0;
+            totalClaimable -= amount;
+        }
+        if (phase == Phase.Completed || phase == Phase.Dissolved) {
+            uint256 sec = security[msg.sender];
+            if (sec != 0) {
+                security[msg.sender] = 0;
+                totalSecurity -= sec;
+                amount += sec;
+            }
+        }
+        uint256 refund = refundShare(msg.sender);
+        if (refund != 0) {
+            refunded[msg.sender] = true;
+            amount += refund;
+        }
+        if (amount == 0) revert NothingToWithdraw();
+        _push(msg.sender, amount);
+        emit Withdrawn(msg.sender, amount);
+    }
+
+    /// @notice Dissolve a stalled circle. Any member can call it once the round has stalled for
+    /// the grace period. The money that is left goes back to members in proportion to what each
+    /// put in minus what each took out.
+    function dissolve() external onlyMember inPhase(Phase.Running) {
+        if (!isStalled()) revert NotStalled();
+        uint256 balance = token.balanceOf(address(this));
+        uint256 owed = totalClaimable + totalSecurity;
+        refundPool = balance > owed ? balance - owed : 0;
+        uint256 base;
+        uint256 n = _members.length;
+        for (uint256 i; i < n; ++i) {
+            base += netContribution(_members[i]);
+        }
+        refundBase = base;
+        phase = Phase.Dissolved;
+        emit Dissolved(currentRound, refundPool, base);
+    }
 }
