@@ -5,7 +5,7 @@
 > Built for QoreChain [Build Before Q-Day](https://build.qorechain.io), category **Post-Quantum dApp**.
 > Deadline: 2 December 2026, 23:59 UTC (3 December, 05:29 IST). Testnet only (`qorechain-diana`, EVM chain id 9800).
 >
-> **Live:** https://rosca.exprmnts.fun · **Try it yourself:** https://rosca.exprmnts.fun/try.html
+> **App:** https://app.rosca.exprmnts.fun · **Site:** https://rosca.exprmnts.fun ([how it works](https://rosca.exprmnts.fun/how) · [live](https://rosca.exprmnts.fun/live) · [security](https://rosca.exprmnts.fun/security) · [proof](https://rosca.exprmnts.fun/proof))
 
 ## What a rosca is
 
@@ -44,22 +44,25 @@ the money, and a key that is safe today can be broken by a quantum computer tomo
 
 Work in progress. This README is updated at each milestone.
 
-## Try it yourself
+## The app
 
-[`try.html`](https://rosca.exprmnts.fun/try.html) lets anyone run a real round on the testnet in about five minutes,
-with no wallet extension:
+[app.rosca.exprmnts.fun](https://app.rosca.exprmnts.fun) is an installable web app (PWA). Anyone can run a real circle on the
+testnet in about five minutes, with no wallet extension:
 
-1. The page makes a test wallet in the browser: a secp256k1 key and an ML-DSA-87 key, kept in the browser's storage only.
-2. Rosca's faucet function (`web-src/api/faucet.ts`) sends it 1.2 test QOR and 30 fUSD.
-3. The visitor registers their ML-DSA-87 key with proof of possession, opens a 3-person circle and joins it through
-   windows scoped first to the factory, then to only their circle and fUSD.
-4. Two bots run by the keeper (`scripts/keeper.ts`) join, pay and approve.
-5. The visitor pays, bids, closes the auction and approves, then tries to send the pot to a stranger with their own signature.
-   That transaction lands on chain and reverts.
-6. The visitor signs the real payout with ML-DSA-87 in the browser, and `pqcVerify` accepts it on chain.
+1. **Create my wallet.** The app makes a secp256k1 key and an ML-DSA-87 key on the device, gets 1.2 test QOR and 30 fUSD from
+   Rosca's faucet (`web-src/api/faucet.ts`), and registers the ML-DSA-87 key with proof of possession.
+2. **Start a circle** with two bots, Ravi and Meera, run by the keeper. The visitor opens a window scoped to the factory, creates
+   the circle, then joins through a window scoped to only that circle and fUSD.
+3. **Play the round** from one "next step" card: pay, bid a discount, close the auction, approve. Every action opens a confirm
+   sheet like a wallet does. The circle is drawn as a ring: the pot in the middle and coins moving as members pay.
+4. **Try to steal it:** send the pot to a stranger with your own real signature. It lands on chain and reverts.
+5. **Sign & collect:** the payout is signed with ML-DSA-87 on the device and accepted by `pqcVerify` on chain.
 
-All signing happens in the browser. The QoreChain REST API sends no CORS headers, so Vercel rewrites `/api/rest/*` to it;
-the rewrite only forwards already-signed transactions. Build the page with `npm run build:web` (esbuild).
+How it works, who can move the pot, your keys and the proof links live behind the profile button.
+
+All signing happens on the device. The QoreChain REST API sends no CORS headers, so the app's Vercel project rewrites
+`/api/rest/*` to it; the rewrite only forwards already-signed transactions. Build with `npm run build:app` (esbuild), deploy `web-app/`.
+The site (`web/`) is plain HTML and CSS.
 
 ## The live circle
 
