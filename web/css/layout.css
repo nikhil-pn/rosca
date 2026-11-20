@@ -1,0 +1,43 @@
+/* Page layout: the story on the left, the live phone pinned on the right (desktop),
+   or hero, phone, story stacked (mobile). */
+.site-nav {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; gap: 28px;
+  max-width: 1200px; margin: 0 auto; padding: 18px 32px;
+  background: rgba(238, 238, 239, 0.82);
+  -webkit-backdrop-filter: saturate(1.6) blur(16px); backdrop-filter: saturate(1.6) blur(16px);
+}
+.site-nav .logo { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 18px; text-decoration: none; }
+.site-nav .logo svg { fill: currentColor; }
+.site-nav .links { display: flex; gap: 22px; margin-left: auto; }
+.site-nav .links a { text-decoration: none; color: #48484c; font-size: 15px; }
+.site-nav .links a:hover { color: var(--ink); }
+.site-nav .gh {
+  text-decoration: none; font-size: 14px; font-weight: 500; height: 36px; padding: 0 16px;
+  display: inline-flex; align-items: center; border-radius: 999px; background: var(--ink); color: #fff;
+}
+
+.layout {
+  max-width: 1200px; margin: 0 auto; padding: 24px 32px 80px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 420px; column-gap: 80px;
+  grid-template-areas: "hero device" "rest device";
+  grid-template-rows: auto 1fr;
+}
+.hero { grid-area: hero; }
+.rest { grid-area: rest; min-width: 0; }
+.device { grid-area: device; position: sticky; top: 84px; align-self: start; padding-top: 8px; }
+.device .phone { width: 390px; margin: 0 auto; }
+.device-note { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; color: var(--muted); font-size: 13px; }
+.device-note .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+
+@media (max-width: 1080px) {
+  .layout { grid-template-columns: minmax(0, 1fr) 390px; column-gap: 48px; }
+}
+@media (max-width: 900px) {
+  .site-nav { padding: 14px 18px; gap: 16px; }
+  .site-nav .links { display: none; }
+  .site-nav .gh { margin-left: auto; }
+  .layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "hero" "device" "rest"; padding: 8px 16px 64px; }
+  .device { position: static; padding-top: 0; margin: 8px 0 24px; }
+  .device .phone { width: min(390px, 100%); }
+}
