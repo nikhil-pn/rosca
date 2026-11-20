@@ -2,8 +2,6 @@
   "network": "qorechain-diana",
   "chainId": 9800,
   "fusd": "0x97143B771D34ddb9130b807b135Ae675A5a963CA",
-  "factory": "0x366d6a029d94a98ba4d93e2eb4dbf07720387d39",
-  "factoryTx": "0xe4d460379e0c7f80a154e3e05dd248fd3250fedbe6e6501b202ef1bd856316f1",
   "circles": [
     {
       "address": "0xF8cA79Bf91513e476D12d5B5B3eE92ac3806D561",
@@ -44,5 +42,9 @@
       "status": "reverted",
       "at": "2026-11-20T17:18:39.086Z"
     }
-  ]
+  ],
+  "factoryV1": "0x366d6a029d94a98ba4d93e2eb4dbf07720387d39",
+  "factoryV1Tx": "0xe4d460379e0c7f80a154e3e05dd248fd3250fedbe6e6501b202ef1bd856316f1",
+  "factory": "0x29053772f08c30c682e0fbb5db3a3d86ac84afef",
+  "factoryTx": "0x38abe4b41a22d1254b4b60df24c458cea7affe81002ccda60884ae44978e1f4e"
 }
