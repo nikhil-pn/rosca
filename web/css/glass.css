@@ -1,0 +1,101 @@
+/* Rosca glass: frosted, light, a little rose gold. Shared by the site and the app.
+   Glass only reads as glass over colour, so the page sits on soft ambient light. */
+:root {
+  --glass-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.52));
+  --glass-bg-strong: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.76));
+  --glass-dark: linear-gradient(180deg, rgba(48, 48, 52, 0.9), rgba(16, 16, 18, 0.86));
+  --glass-edge: rgba(255, 255, 255, 0.78);
+  --glass-blur: blur(24px) saturate(1.8);
+  --glass-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.3),
+    0 14px 34px -16px rgba(70, 40, 20, 0.24),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+  --spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --rose: #c99474;
+  --rose-soft: #f3dccb;
+}
+
+/* Ambient light behind everything. */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(42vmax 34vmax at 6% 4%, rgba(232, 195, 162, 0.55), transparent 62%),
+    radial-gradient(36vmax 30vmax at 96% 14%, rgba(168, 212, 255, 0.42), transparent 62%),
+    radial-gradient(46vmax 36vmax at 74% 98%, rgba(176, 234, 202, 0.42), transparent 60%),
+    radial-gradient(30vmax 26vmax at 16% 92%, rgba(255, 208, 226, 0.34), transparent 62%),
+    #eeeeef;
+}
+
+.glass {
+  position: relative;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--glass-shadow);
+}
+.glass.strong { background: var(--glass-bg-strong); }
+/* A soft specular sheen across the top-left of a glass surface, painted under the content
+   (backdrop-filter makes each glass surface its own stacking context, so z-index -1 stays inside it). */
+.glass.sheen::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 38%);
+}
+
+/* Buttons */
+.btn-primary,
+.btn-glass {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.18s var(--spring), box-shadow 0.2s ease, opacity 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary {
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--glass-dark);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 12px 26px -12px rgba(0, 0, 0, 0.45);
+}
+.btn-glass {
+  color: var(--ink);
+  border: 1px solid var(--glass-edge);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+.btn-primary:active,
+.btn-glass:active { transform: scale(0.97); }
+.btn-primary[disabled],
+.btn-glass[disabled] { opacity: 0.45; cursor: default; transform: none; }
+@media (hover: hover) {
+  .btn-primary:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 16px 30px -12px rgba(0, 0, 0, 0.5); }
+  .btn-glass:hover { background: var(--glass-bg-strong); }
+}
+.btn-primary.block,
+.btn-glass.block { width: 100%; }
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .btn-glass { background: #fff; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
