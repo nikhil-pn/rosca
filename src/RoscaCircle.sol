@@ -290,10 +290,12 @@ contract RoscaCircle {
         emit Bid(r, msg.sender, discount);
     }
 
-    /// @notice Close the auction once the bidding time is over. Anyone can call it.
+    /// @notice Close the auction once the bidding time is over. Any member can call it, so no
+    /// single member can hold a round up. The winner follows fixed rules, whoever calls.
     /// Past winners who did not pay are covered from the security held back from their payout.
     /// With no bid, the earliest-joined eligible member takes the pot at no discount.
-    function closeAuction() external inPhase(Phase.Running) {
+    /// The loop below runs over the members, at most MAX_MEMBERS (50), so its gas is bounded.
+    function closeAuction() external inPhase(Phase.Running) onlyMember {
         uint256 r = currentRound;
         Round storage rd = _rounds[r];
         if (rd.closed) revert AlreadyClosed(r);
