@@ -1,7 +1,7 @@
 /**
  * POST /api/faucet  { "address": "0x…" }
  *
- * Gives a brand-new visitor wallet enough test QOR for gas and 40 fUSD to play one circle, in one hybrid
+ * Gives a brand-new visitor wallet enough test QOR for gas and 30 fUSD to play one circle, in one hybrid
  * transaction from Rosca's throwaway faucet account (testnet only; its mnemonic is the Vercel env var
  * ROSCA_FAUCET_MNEMONIC). Only wallets that do not exist on chain yet are served, a few per IP per hour.
  */
@@ -9,8 +9,8 @@ import { deriveUnifiedAccount, evmToQor } from "@qorechain/sdk";
 import { broadcastAs, balances, convertCoinMsg, NET } from "../lib/qore.ts";
 
 const REST = "https://api-testnet.qore.host";
-const QOR = 2_000_000n; // 2 test QOR, in uqor
-const FUSD = 40n * 10n ** BigInt(NET.fusdDecimals);
+const QOR = 1_200_000n; // 1.2 test QOR, in uqor (a full try uses about 0.8)
+const FUSD = 30n * 10n ** BigInt(NET.fusdDecimals); // three $10 shares
 const PER_IP_PER_HOUR = 4;
 
 const hits = new Map<string, number[]>();
@@ -70,7 +70,7 @@ export default async function handler(req: Req, res: Res) {
       await new Promise((r) => setTimeout(r, 4000));
       tx = await broadcastAs(REST, faucet, "hybrid", msgs);
     }
-    return res.status(200).json({ tx, qor: "2", fusd: "40", cosmos: to });
+    return res.status(200).json({ tx, qor: "1.2", fusd: "30", cosmos: to });
   } catch (e) {
     return res.status(500).json({ error: e instanceof Error ? e.message.slice(0, 300) : "faucet failed" });
   }

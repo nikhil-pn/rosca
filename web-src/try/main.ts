@@ -136,7 +136,7 @@ function draw() {
   // 2. money
   const haveMoney = s.qor > 0n;
   setState("money", haveMoney ? "done" : "ready");
-  setAct("money", btn("money", "Get 2 QOR + 40 fUSD"));
+  setAct("money", btn("money", "Get 1.2 QOR + 30 fUSD"));
   setOut("money", haveMoney ? `You have ${(Number(s.qor) / 1e18).toFixed(2)} test QOR and ${usd(s.fusd)} fUSD.${saved.tx.money ? " " + txLink(saved.tx.money) : ""}` : "");
 
   // 3. post-quantum key
