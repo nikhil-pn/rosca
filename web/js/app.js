@@ -19,7 +19,7 @@ function money(units) {
   return `$${whole}<span class="dec">.${dec}</span>`;
 }
 
-const state = { list: [], selected: null, attacks: [], tab: "wallet" };
+const state = { list: [], all: [], selected: null, attacks: [], tab: "wallet" };
 
 function chipFor(c, i) {
   const b = document.createElement("button");
@@ -105,14 +105,16 @@ async function refreshStory() {
 async function loadCircles() {
   const addrs = await chain.circles();
   const infos = await Promise.all(addrs.map((a) => chain.circleInfo(a)));
-  const fresh = infos.reverse();
+  story.renderStats(infos, state.attacks);
+  // The story follows the keeper's circles. Visitors' "Try" circles and the stalled first test stay out of it.
+  const fresh = infos.filter((c) => !c.name.startsWith("Try · ") && c.name !== "Test run").reverse();
   const newest = fresh[0]?.address;
   if (!state.selected || (state.list[0] && state.list[0].address !== newest && state.selected === state.list[0].address)) {
     state.selected = newest ?? null;
   }
   state.list = fresh;
+  state.all = infos;
   renderChips();
-  story.renderStats(fresh, state.attacks);
 }
 
 async function loadAttacks() {
@@ -132,7 +134,7 @@ async function start() {
   try {
     await loadCircles();
     await Promise.all([refreshPhone(), loadAttacks()]);
-    story.renderStats(state.list, state.attacks);
+    story.renderStats(state.all, state.attacks);
     await refreshStory();
   } catch (e) {
     console.error("Rosca: could not read the testnet", e);
