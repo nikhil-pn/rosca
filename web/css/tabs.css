@@ -1,0 +1,18 @@
+/* The phone's Activity and Members views. */
+.view[hidden] { display: none; }
+.view[data-view="activity"], .view[data-view="members"] { overflow-y: auto; padding-top: 22px; scrollbar-width: none; }
+.view::-webkit-scrollbar { display: none; }
+.view-title { font-size: 26px; font-weight: 600; letter-spacing: -0.03em; padding: 0 6px 12px; }
+.view-note { color: var(--muted); font-size: 13px; line-height: 1.5; padding: 14px 6px 0; }
+.feed.mini { max-height: none; }
+.feed.mini li { grid-template-columns: 30px minmax(0, 1fr); padding: 9px 6px; }
+.feed.mini .ic { width: 30px; height: 30px; font-size: 13px; }
+.feed.mini .what { font-size: 14px; }
+.feed.mini .when { grid-column: 2; font-size: 12px; }
+.people { list-style: none; display: grid; gap: 6px; }
+.people li { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px; border-radius: var(--radius-md); background: var(--soft); }
+.people li.empty { display: block; color: var(--muted); background: none; }
+.pav { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; color: #fff; background: linear-gradient(140deg, #c99474, #8f6448); }
+.pname { font-weight: 500; font-size: 15px; }
+.pname small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; margin-top: 2px; }
+.dock-plus { text-decoration: none; }
