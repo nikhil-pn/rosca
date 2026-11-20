@@ -333,4 +333,109 @@ contract RoscaCircle {
         hasWon[winner] = true;
         emit AuctionClosed(r, winner, discount, rd.collected);
     }
+
+    // ---------------------------------------------------------------- release
+
+    event Approved(uint256 indexed round, address indexed member, uint16 approvals);
+    event Released(
+        uint256 indexed round,
+        address indexed winner,
+        address recipient,
+        uint256 payout,
+        uint256 discount,
+        uint256 fee,
+        uint256 securityHeld
+    );
+    event Completed();
+
+    /// @notice What a release of round `r` pays out, split into its parts.
+    function quotePayout(uint256 r)
+        public
+        view
+        returns (uint256 payout, uint256 fee, uint256 dividend, uint256 securityHeld)
+    {
+        Round storage rd = _rounds[r];
+        if (!rd.closed) revert NotClosed(r);
+        uint256 pot = rd.collected;
+        uint256 discount = rd.discount;
+        fee = (pot * feeBps) / 10000;
+        if (fee > discount) fee = discount;
+        dividend = discount - fee;
+        uint256 gross = pot - discount;
+        uint256 futureDues = share * (uint256(size) - r);
+        securityHeld = (gross * securityBps) / 10000;
+        if (securityHeld > futureDues) securityHeld = futureDues;
+        payout = gross - securityHeld;
+    }
+
+    /// @notice The exact bytes the winner signs with their ML-DSA-87 key to release round `r`
+    /// to `recipient` before `deadline`.
+    function payoutMessage(uint256 r, address recipient, uint256 deadline) public view returns (bytes memory) {
+        (uint256 payout,,,) = quotePayout(r);
+        return abi.encode(PAYOUT_TAG, block.chainid, address(this), r, recipient, payout, deadline);
+    }
+
+    /// @notice Approve the release of the current round's pot to its winner.
+    function approveRelease() external inPhase(Phase.Running) onlyMember {
+        uint256 r = currentRound;
+        Round storage rd = _rounds[r];
+        if (!rd.closed) revert NotClosed(r);
+        if (rd.released) revert AlreadyReleased(r);
+        if (approved[r][msg.sender]) revert AlreadyApproved(r);
+        approved[r][msg.sender] = true;
+        rd.approvals += 1;
+        emit Approved(r, msg.sender, rd.approvals);
+    }
+
+    /// @notice Release the current round's pot. Anyone may submit it, but it needs a majority of
+    /// approvals and the winner's ML-DSA-87 signature over `payoutMessage`. A leaked classical
+    /// (ECDSA) key cannot produce that signature, so it cannot redirect the pot.
+    function release(address recipient, uint256 deadline, bytes calldata signature)
+        external
+        nonReentrant
+        inPhase(Phase.Running)
+    {
+        uint256 r = currentRound;
+        Round storage rd = _rounds[r];
+        if (!rd.closed) revert NotClosed(r);
+        if (rd.released) revert AlreadyReleased(r);
+        if (recipient == address(0)) revert ZeroAddress();
+        if (block.timestamp > deadline) revert Expired(deadline);
+        uint16 needed = quorumNeeded();
+        if (rd.approvals < needed) revert NoQuorum(rd.approvals, needed);
+
+        address winner = rd.winner;
+        PqcGate.requireSignedBy(winner, payoutMessage(r, recipient, deadline), signature);
+
+        (uint256 payout, uint256 fee, uint256 dividend, uint256 held) = quotePayout(r);
+        rd.released = true;
+        paidOut[winner] += payout;
+        if (held != 0) {
+            security[winner] += held;
+            totalSecurity += held;
+        }
+        _shareDividend(dividend, winner);
+
+        _push(recipient, payout);
+        _push(organiser, fee);
+        emit Released(r, winner, recipient, payout, rd.discount, fee, held);
+
+        if (r == size) {
+            phase = Phase.Completed;
+            emit Completed();
+        } else {
+            _startRound(r + 1);
+        }
+    }
+
+    function _shareDividend(uint256 dividend, address winner) internal {
+        if (dividend == 0) return;
+        uint256 n = _members.length;
+        uint256 each = dividend / n;
+        for (uint256 i; i < n; ++i) {
+            claimable[_members[i]] += each;
+        }
+        claimable[winner] += dividend - each * n;
+        totalClaimable += dividend;
+    }
 }
