@@ -1107,9 +1107,11 @@ document.addEventListener("click", (e) => {
   }
 });
 $("profile-btn").addEventListener("click", () => profileSheet());
-const sw = $("mode-switch");
-sw.setAttribute("aria-checked", String(DEMO));
-sw.addEventListener("click", () => switchMode(DEMO ? "live" : "demo"));
+for (const b of document.querySelectorAll<HTMLButtonElement>("#mode-seg [data-mode]")) {
+  const on = (b.dataset.mode === "demo") === DEMO;
+  b.setAttribute("aria-checked", String(on));
+  b.addEventListener("click", () => !on && switchMode(b.dataset.mode as Mode));
+}
 $("circle-pill").addEventListener("click", () => (acc ? circlesSheet() : setupFlow()));
 $("dock-plus").addEventListener("click", () => (acc ? startFlow() : setupFlow()));
 
