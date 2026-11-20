@@ -11,7 +11,8 @@
     "window": "tsx --env-file=.env scripts/window.ts",
     "deploy:testnet": "forge script script/Deploy.s.sol --rpc-url qorechain_testnet --broadcast",
     "typecheck": "tsc --noEmit",
-    "rosca": "tsx scripts/rosca.ts"
+    "rosca": "tsx scripts/rosca.ts",
+    "build:web": "esbuild web-src/try/main.ts --bundle --platform=browser --format=esm --target=es2022 --minify --define:global=globalThis --outfile=web/js/try.js && esbuild web-src/api/faucet.ts --bundle --platform=node --format=esm --target=node20 --outfile=web/api/faucet.mjs --banner:js=\"import { createRequire as __cr } from 'module'; const require = __cr(import.meta.url);\""
   },
   "dependencies": {
     "@cosmjs/stargate": "^0.39.0",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.7.5",
+    "esbuild": "^0.24.2",
     "tsx": "^4.19.0",
     "typescript": "^5.6.3",
     "viem": "^2.0.0"

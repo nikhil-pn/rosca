@@ -8,3 +8,6 @@ broadcast/*/31337/
 /lib/
 *.key
 .scratch/
+# Built by `npm run build:web` before each deploy (sources in web-src/)
+web/js/try.js
+web/api/
