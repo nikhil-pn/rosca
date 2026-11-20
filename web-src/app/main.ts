@@ -155,19 +155,23 @@ function nextStep(s: Snap): Next {
   const t = nowSec();
   const i = meIdx(s);
   const r = s.r;
+  const size = s.info?.size ?? 3;
+  const share = s.info?.share ?? 10n * UNIT;
   const timer = (end: bigint) => `<span class="timer" data-end="${end}"></span>`;
   if (!ready(s))
-    return { key: "setup", kicker: "Almost there", title: "Finish setting up your wallet", body: "Get free test money and register your post-quantum key. It takes about ten seconds.", actions: `<button class="btn-primary" data-act="setup">Set up my wallet</button>` };
+    return DEMO
+      ? { key: "setup", kicker: "Almost there", title: "Finish setting up your wallet", body: "Get free test money and register your post-quantum key. It takes about ten seconds.", actions: `<button class="btn-primary" data-act="setup">Set up my wallet</button>` }
+      : { key: `setup:${s.qor > 0n}`, kicker: "Almost there", title: s.qor > 0n ? "Register your post-quantum key" : "Fund your wallet", body: s.qor > 0n ? "One transaction puts your ML-DSA-87 key on chain. Circles only accept members who did this." : "Send test QOR and fUSD to your wallet from the QoreChain faucet, then come back here.", actions: `<button class="btn-primary" data-act="setup">${s.qor > 0n ? "Register my key" : "Fund my wallet"}</button>` };
+  if (!DEMO && s.bankFusd > 0n)
+    return { key: `convert:${s.bankFusd}`, kicker: "Money arrived", title: `Move ${usd(s.bankFusd)} fUSD into your wallet`, body: "The faucet sent fUSD to the chain's bank side. One transaction, signed with both your keys, moves it into your wallet so circles can use it.", actions: `<button class="btn-primary" data-act="convert">Move ${usd(s.bankFusd)}</button>` };
   if (!s.circle || (s.phase >= 2 && s.owed === 0n))
-    return {
-      key: `start:${s.circle ?? ""}:${s.phase}`,
-      kicker: s.phase >= 2 ? "Circle complete" : "Get started",
-      title: s.phase >= 2 ? "Start another circle" : "Start your first circle",
-      body: "You and two friends, Ravi and Meera (they're bots), each put in $10 a round for 3 rounds. Everyone takes the pot once.",
-      actions: `<button class="btn-primary" data-act="start">Start a circle</button>`,
-    };
+    return DEMO
+      ? { key: `start:${s.circle ?? ""}:${s.phase}`, kicker: s.phase >= 2 ? "Circle complete" : "Get started", title: s.phase >= 2 ? "Start another circle" : "Start your first circle", body: "You and two friends, Ravi and Meera (they're bots), each put in $10 a round for 3 rounds. Everyone takes the pot once.", actions: `<button class="btn-primary" data-act="start">Start a circle</button>` }
+      : { key: `start:${s.circle ?? ""}:${s.phase}`, kicker: s.phase >= 2 ? "Circle complete" : "Get started", title: s.phase >= 2 ? "Start another circle" : "Create a circle, or join one", body: "Set the name, how much each member pays, how many members, and how often. Then invite your friends with a link. Got an invite link? Open it and you'll join.", actions: `<button class="btn-primary" data-act="start">Create a circle</button>` };
   if (s.phase === 0)
-    return { key: `forming:${s.members.length}`, kicker: "Starting", title: `Waiting for friends to join · ${s.members.length} of 3`, body: "Ravi and Meera are joining. Each one needs a registered post-quantum key to get in.", actions: `<span class="spinner"></span>` };
+    return DEMO
+      ? { key: `forming:${s.members.length}`, kicker: "Starting", title: `Waiting for friends to join · ${s.members.length} of 3`, body: "Ravi and Meera are joining. Each one needs a registered post-quantum key to get in.", actions: `<span class="spinner"></span>` }
+      : { key: `forming:${s.members.length}`, kicker: s.info?.name ?? "Starting", title: `Invite friends · ${s.members.length} of ${size} joined`, body: `Round 1 starts when all ${size} members have joined. Share the invite link; each friend makes a wallet and joins with their own post-quantum key.`, actions: `<button class="btn-primary" data-act="invite">Share invite link</button>` };
   if (s.stalled)
     return { key: "stalled", kicker: "Circle stuck", title: "This circle can't go on", body: "A round ran out of time and nobody can finish it. Dissolve the circle and everyone gets back what they put in, minus what they already took out.", actions: `<button class="btn-primary" data-act="dissolve">Dissolve and refund</button>` };
   if (s.phase >= 2)
@@ -175,17 +179,18 @@ function nextStep(s: Snap): Next {
   if (!r) return { key: "wait", kicker: "", title: "Loading…", body: "", actions: "" };
   const winner = r.closed ? r.winner : null;
   const iWin = winner && i >= 0 && winner.toLowerCase() === s.members[i].toLowerCase();
-  const round = `Round ${s.round} of 3`;
+  const round = `${DEMO ? "" : `${s.info?.name ?? ""} · `}Round ${s.round} of ${size}`;
   if (!r.closed && t <= r.bidEnd) {
     if (!s.paid[i])
-      return { key: `pay:${s.round}`, kicker: round, title: "Pay your $10 for this round", body: s.won[i] ? "You already took a pot, so you keep paying your share. If you don't, the security held from your payout covers it." : "Everyone pays in first. Then whoever needs the money most can bid for it.", actions: `<button class="btn-primary" data-act="pay">Pay $10</button>${timer(r.bidEnd)}` };
+      return { key: `pay:${s.round}`, kicker: round, title: `Pay your ${usd(share)} for this round`, body: s.won[i] ? "You already took a pot, so you keep paying your share. If you don't, the security held from your payout covers it." : "Everyone pays in first. Then whoever needs the money most can bid for it.", actions: `<button class="btn-primary" data-act="pay">Pay ${usd(share)}</button>${timer(r.bidEnd)}` };
     if (!s.won[i] && r.bestBidder === ZERO)
-      return { key: `bid:${s.round}`, kicker: round, title: "Want the pot first?", body: "Bid the discount you'd accept. The biggest discount wins, and the discount is shared with everyone. Or just wait: with no bids, the first member to join wins.", actions: `<div class="stepper glass"><button data-bid="-1" aria-label="Less">−</button><span id="bid-val">$2.00</span><button data-bid="1" aria-label="More">+</button></div><button class="btn-primary" data-act="bid">Bid</button>${timer(r.bidEnd)}` };
+      return { key: `bid:${s.round}`, kicker: round, title: "Want the pot first?", body: "Bid the discount you'd accept. The biggest discount wins, and the discount is shared with everyone. Or just wait: with no bids, the earliest member who hasn't won takes it.", actions: `<div class="stepper glass"><button data-bid="-1" aria-label="Less">−</button><span id="bid-val"></span><button data-bid="1" aria-label="More">+</button></div><button class="btn-primary" data-act="bid">Bid</button>${timer(r.bidEnd)}` };
     const lead = r.bestBidder !== ZERO ? `${nameOf(r.bestBidder)} leads with a ${usd(r.bestDiscount)} discount.` : "";
-    return { key: `waitbid:${s.round}:${r.bestBidder}:${r.bestDiscount}`, kicker: round, title: "You're paid in. Bidding is open.", body: `${lead} The auction closes when the timer runs out.`, actions: timer(r.bidEnd) };
+    const canOutbid = !s.won[i] && r.bestBidder.toLowerCase() !== s.members[i].toLowerCase();
+    return { key: `waitbid:${s.round}:${r.bestBidder}:${r.bestDiscount}`, kicker: round, title: "You're paid in. Bidding is open.", body: `${lead} The auction closes when the timer runs out.`, actions: canOutbid ? `<div class="stepper glass"><button data-bid="-1" aria-label="Less">−</button><span id="bid-val"></span><button data-bid="1" aria-label="More">+</button></div><button class="btn-glass" data-act="bid">Outbid</button>${timer(r.bidEnd)}` : timer(r.bidEnd) };
   }
   if (!r.closed)
-    return { key: `close:${s.round}`, kicker: round, title: "Bidding is over", body: "Anyone can close the auction now. Ravi will do it in a few seconds if you don't.", actions: `<button class="btn-primary" data-act="close">Close the auction</button>` };
+    return { key: `close:${s.round}`, kicker: round, title: "Bidding is over", body: DEMO ? "Anyone can close the auction now. Ravi will do it in a few seconds if you don't." : "Anyone in the circle can close the auction now. That picks this round's winner.", actions: `<button class="btn-primary" data-act="close">Close the auction</button>` };
   if (!r.released) {
     const who = nameOf(r.winner);
     const potLine = `${usd(r.collected - r.discount)} after a ${usd(r.discount)} discount`;
@@ -195,7 +200,7 @@ function nextStep(s: Snap): Next {
       const tried = saved.thief[s.circle];
       return { key: `collect:${s.round}:${tried ? 1 : 0}`, kicker: round, title: `Collect your pot`, body: `${potLine}. Sign the payout with your post-quantum key and the chain pays you.`, actions: `<button class="btn-primary" data-act="collect">Sign &amp; collect</button>${tried ? "" : `<button class="btn-glass" data-act="thief">Try to steal it</button>`}` };
     }
-    return { key: `waitrel:${s.round}:${r.approvals}`, kicker: round, title: `Waiting for ${who} to sign`, body: `Approved ${r.approvals} of ${s.needed}. ${iWin ? "One more approval is needed." : `Only ${who}'s post-quantum signature can release this pot.`}`, actions: `<span class="spinner"></span>` };
+    return { key: `waitrel:${s.round}:${r.approvals}`, kicker: round, title: iWin ? "Waiting for approvals" : `Waiting for ${who} to sign`, body: `Approved ${r.approvals} of ${s.needed}. ${iWin ? "Ask the others to approve your payout." : `Only ${who}'s post-quantum signature can release this pot.`}`, actions: iWin && !DEMO ? `<button class="btn-glass" data-act="invite">Remind the circle</button>` : `<span class="spinner"></span>` };
   }
   return { key: `between:${s.round}`, kicker: round, title: "Next round is starting", body: "", actions: `<span class="spinner"></span>` };
 }
@@ -279,7 +284,8 @@ function draw() {
     if (n.key !== nextKey) {
       nextKey = n.key;
       $("h-next").innerHTML = `<p class="kicker">${esc(n.kicker)}</p><h2>${esc(n.title)}</h2>${n.body ? `<p>${esc(n.body)}</p>` : ""}<div class="next-actions">${n.actions}</div>`;
-      bidVal = 2;
+      bidVal = 0;
+      showBid();
       tickTimers();
     }
     drawRing(s);
@@ -488,7 +494,18 @@ function startFlow() {
   });
 }
 
-let bidVal = 2;
+let bidVal = 0;
+const potOf = () => (snap?.info ? snap.info.share * BigInt(snap.info.size) : 30n * UNIT);
+const shareOf = () => snap?.info?.share ?? 10n * UNIT;
+/** Bids move in steps of 1% of the pot (at least $0.50), up to the circle's discount cap. */
+const bidStep = () => Math.max(0.5, Math.round(Number(potOf()) / 1e6 / 100 / 0.5) * 0.5);
+const bidMax = () => (Number(potOf()) / 1e6) * ((snap?.info?.maxDiscountBps ?? 3000) / 10000);
+const bidFloor = () => (snap?.r && snap.r.bestBidder !== ZERO ? Number(snap.r.bestDiscount) / 1e6 + bidStep() : bidStep() * 4);
+function showBid() {
+  if (!bidVal || bidVal < bidFloor()) bidVal = Math.min(bidFloor(), bidMax());
+  const v = document.getElementById("bid-val");
+  if (v) v.textContent = usd(BigInt(Math.round(bidVal * 1e6)));
+}
 
 const actions: Record<string, () => void> = {
   create: () => setupFlow(),
@@ -497,17 +514,17 @@ const actions: Record<string, () => void> = {
   how: () => howSheet(),
   pay: () =>
     confirmTx({
-      title: `Pay ${usd(10n * UNIT)}`,
-      rows: [["To", "Your circle's pot"], ["Amount", "$10.00 fUSD"], windowRow("your circle"), feeRow],
+      title: `Pay ${usd(shareOf())}`,
+      rows: [["To", `${esc(snap?.info?.name && !DEMO ? snap.info.name : "Your circle")}'s pot`], ["Amount", `${usd(shareOf())} fUSD`], windowRow("your circle"), feeRow],
       cta: "Confirm and pay",
       run: (p) => withStep(p, "Paying into the pot", () => A.pay(acc!, saved.current!), (h) => txLink(h, "tx")),
-      done: () => "Paid. Your $10 is in the pot.",
+      done: () => `Paid. Your ${usd(shareOf())} is in the pot.`,
     }),
   bid: () =>
     confirmTx({
-      title: `Bid a ${usd(BigInt(bidVal * 1e6))} discount`,
-      lead: "If your bid is the biggest when the timer ends, you take this round's pot minus the discount. The discount is shared with all three of you.",
-      rows: [["Discount", `${usd(BigInt(bidVal * 1e6))}`], ["You'd take", `${usd(30n * UNIT - BigInt(bidVal * 1e6))} of the $30 pot`], windowRow("your circle"), feeRow],
+      title: `Bid a ${usd(BigInt(Math.round(bidVal * 1e6)))} discount`,
+      lead: "If your bid is the biggest when the timer ends, you take this round's pot minus the discount. The discount is shared with every member.",
+      rows: [["Discount", `${usd(BigInt(Math.round(bidVal * 1e6)))}`], ["You'd take", `${usd(potOf() - BigInt(Math.round(bidVal * 1e6)))} of the ${usd(potOf())} pot`], ["Cap", `${(snap?.info?.maxDiscountBps ?? 3000) / 100}% of the pot`], windowRow("your circle"), feeRow],
       cta: "Confirm bid",
       run: (p) => withStep(p, "Placing your bid", () => A.bid(acc!, saved.current!, [BigInt(Math.round(bidVal * 1e6))]), (h) => txLink(h, "tx")),
       done: () => "Bid placed. It wins if nobody bids higher before the timer ends.",
@@ -746,9 +763,8 @@ document.addEventListener("click", (e) => {
   if (act) return actions[act.dataset.act!]?.();
   const bid = t.closest<HTMLElement>("[data-bid]");
   if (bid) {
-    bidVal = Math.min(9, Math.max(0.5, bidVal + Number(bid.dataset.bid) * 0.5));
-    const v = document.getElementById("bid-val");
-    if (v) v.textContent = usd(BigInt(Math.round(bidVal * 1e6)));
+    bidVal = Math.min(bidMax(), Math.max(bidFloor(), bidVal + Number(bid.dataset.bid) * bidStep()));
+    showBid();
     return;
   }
   const go = t.closest<HTMLElement>("[data-tab],[data-tab-go]");
