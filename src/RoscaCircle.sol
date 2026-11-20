@@ -357,6 +357,8 @@ contract RoscaCircle {
     event Completed();
 
     /// @notice What a release of round `r` pays out, split into its parts.
+    /// @dev Solidity 0.8 reverts on overflow. Every term is bounded by the pot (share × size) and a
+    /// basis-point fraction of it, so no realistic share size comes near the limit.
     function quotePayout(uint256 r)
         public
         view
