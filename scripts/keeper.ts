@@ -8,7 +8,7 @@
  *
  *   ROSCA_FUNDER_ENV=~/.config/pi/qorex.env npx tsx scripts/keeper.ts
  *
- * Env: ROSCA_ROUND_SECONDS (default 1800), ROSCA_TICK_SECONDS (default 30).
+ * Env: ROSCA_ROUND_SECONDS (default 1800), ROSCA_TICK_SECONDS (default 10).
  */
 import { pqcSign, generateMnemonic, deriveUnifiedAccount, type UnifiedAccount } from "@qorechain/sdk";
 import { bytesToHex, hexToBytes, type Address, type Hex } from "viem";
@@ -21,7 +21,9 @@ import { ensureWindow, publicClient, qorechainTestnet, walletFor } from "./lib/e
 import { fundFusd, fundQor } from "./lib/native.ts";
 
 const ROUND = Number(process.env.ROSCA_ROUND_SECONDS ?? 1800);
-const TICK = Number(process.env.ROSCA_TICK_SECONDS ?? 30) * 1000;
+const TICK = Number(process.env.ROSCA_TICK_SECONDS ?? 10) * 1000;
+/** The hourly demo circle only needs a look every 30 s; visitors' circles get one every tick. */
+const MAIN_EVERY = Math.max(1, Math.round(30_000 / TICK));
 const SIZE = 5;
 const SHARE = 10; // fUSD per member per round
 const NAMES = ["Office kuri", "Family chit", "Friends kameti"];
@@ -50,12 +52,13 @@ const pick = <T>(xs: T[]) => xs[Math.floor(Math.random() * xs.length)];
 
 const org = await account("deployer");
 const members = await Promise.all(memberRoles(SIZE).map((r) => account(r)));
-const byAddr = (a: string) => members.find((m) => m.evm.toLowerCase() === a.toLowerCase());
+const bots = await Promise.all(["bot-1", "bot-2"].map((r) => account(r as `bot-${number}`)));
+const byAddr = (a: string) => [...members, ...bots].find((m) => m.evm.toLowerCase() === a.toLowerCase());
 
 // ---------------------------------------------------------------- money for the demo accounts
 
 async function topUp(): Promise<void> {
-  for (const m of [org, ...members]) {
+  for (const m of [org, ...members, ...bots]) {
     const qor = await publicClient.getBalance({ address: m.evm as Address });
     if (qor < 15n * 10n ** 17n) log(`top up ${m.evm}: 3 QOR ${await fundQor(m.cosmos, 3_000_000n)}`);
     if (m === org) continue;
@@ -185,10 +188,119 @@ async function step(circle: Address): Promise<"done" | "wait"> {
   return "wait";
 }
 
+
+// ---------------------------------------------------------------- visitors' circles ("Try it yourself")
+
+/**
+ * A visitor on the website opens a circle named "Try · …" for three members and joins it first.
+ * The two bots join, pay every round, close the auction if the visitor doesn't, and approve.
+ * The visitor wins round 1 (first to join, so they take it even with no bid) and releases it with
+ * their own ML-DSA-87 signature from the browser. The bots win and release rounds 2 and 3.
+ * Bots keep one window scoped to fUSD and every visitor circle they are in (at most 15).
+ */
+const TRY_PREFIX = "Try · ";
+const TRY_MAX_AGE = 3 * 3600 * 1000;
+const tracked = new Map<Address, number>(); // circle -> when first seen
+let scanned = 0;
+
+const botScope = (): Address[] => [CONFIG.fusd, ...[...tracked.keys()].slice(-15)];
+
+async function discover(): Promise<void> {
+  const d = readDeployments();
+  const all = (await publicClient.readContract({ address: d.factory as Address, abi: c.factoryAbi, functionName: "circles" })) as Address[];
+  const from = scanned === 0 ? Math.max(0, all.length - 40) : scanned;
+  for (const circle of all.slice(from)) {
+    const name = await c.read<string>(circle, "name");
+    if (!name.startsWith(TRY_PREFIX)) continue;
+    const [size, share, roundLength, phase] = await Promise.all([
+      c.read<number>(circle, "size"),
+      c.read<bigint>(circle, "share"),
+      c.read<number>(circle, "roundLength"),
+      c.read<number>(circle, "phase"),
+    ]);
+    // Only play the circles the website makes: 3 members, small shares, short rounds.
+    if (size !== 3 || share > 20n * UNIT || roundLength > 600 || phase > 1) continue;
+    tracked.set(circle, Date.now());
+    log(`try circle found: "${name}" ${circle}`);
+  }
+  scanned = all.length;
+}
+
+async function tryStep(circle: Address): Promise<void> {
+  const scope = botScope();
+  const phase = PHASE[await c.read<number>(circle, "phase")];
+  if (phase === "Completed" || phase === "Dissolved") {
+    for (const b of bots) {
+      const owed = await c.read<bigint>(circle, "withdrawable", [b.evm]);
+      if (owed > 0n) log(`try withdraw ${b.evm.slice(0, 8)}`, await c.withdraw(b, circle, scope));
+    }
+    tracked.delete(circle);
+    log(`try circle ${circle} finished`);
+    return;
+  }
+  const joined = (await c.read<Address[]>(circle, "members")).map((a) => a.toLowerCase());
+  if (phase === "Forming") {
+    if (joined.length === 0) return; // the visitor joins first, so they win round 1
+    for (const b of bots) {
+      if (!joined.includes(b.evm.toLowerCase())) {
+        log(`try join ${b.evm.slice(0, 8)}`, await c.join(b, circle, scope));
+        return; // one action per tick keeps every circle moving
+      }
+    }
+    return;
+  }
+  const round = await c.read<bigint>(circle, "currentRound");
+  const r = await c.read<RoundView & { closedAt: bigint }>(circle, "getRound", [round]);
+  if (!r.closed) {
+    if (now() <= r.bidEnd) {
+      for (const b of bots) {
+        if (!(await c.read<boolean>(circle, "paid", [round, b.evm]))) {
+          log(`try pay r${round} ${b.evm.slice(0, 8)}`, await c.pay(b, circle, scope));
+          return;
+        }
+      }
+    } else if (now() > r.bidEnd + 20n) {
+      log(`try close r${round}`, await c.closeAuction(bots[0], circle, scope)); // the visitor had 20 s to do it
+    }
+    return;
+  }
+  if (r.released) return;
+  const needed = await c.read<number>(circle, "quorumNeeded");
+  const winnerBot = byAddr(r.winner);
+  // One bot approves at once; the second only if the visitor hasn't approved within 45 s.
+  for (const [i, b] of bots.entries()) {
+    if (r.approvals >= needed) break;
+    if (await c.read<boolean>(circle, "approved", [round, b.evm])) continue;
+    if (i === 1 && r.approvals >= 1 && now() < r.closedAt + 45n && !winnerBot) break;
+    log(`try approve r${round} ${b.evm.slice(0, 8)}`, await c.approveRelease(b, circle, scope));
+    return;
+  }
+  if (winnerBot && r.approvals >= needed && bots.includes(winnerBot)) {
+    log(`try release r${round} (ML-DSA-87)`, await c.release(winnerBot, circle, undefined, scope));
+  }
+}
+
+async function tryTick(): Promise<void> {
+  await discover();
+  for (const [circle, seen] of tracked) {
+    if (Date.now() - seen > TRY_MAX_AGE) {
+      tracked.delete(circle);
+      continue;
+    }
+    await tryStep(circle).catch((e) => log(`try ${circle.slice(0, 8)} error:`, e instanceof Error ? e.message.split("\n")[0] : e));
+  }
+}
+
 // ---------------------------------------------------------------- forever
 
 log(`keeper: ${SIZE} members, ${SHARE} fUSD shares, ${ROUND}s rounds`);
+let tick = 0;
 for (;;) {
+  await tryTick().catch((e) => log("try error:", e instanceof Error ? e.message.split("\n")[0] : e));
+  if (tick++ % MAIN_EVERY !== 0) {
+    await sleep(TICK);
+    continue;
+  }
   try {
     const d = readDeployments();
     let circle = d.live?.address as Address | undefined;

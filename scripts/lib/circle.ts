@@ -39,7 +39,8 @@ export interface CircleParams {
   graceSeconds: number;
 }
 
-/** Targets of a member's scoped window: the circle and the fUSD token, nothing else. */
+/** Targets of a member's scoped window: the circle and the fUSD token, nothing else.
+ * (Every helper below takes an optional `targets` for a bot that plays several circles at once.) */
 export const scope = (circle: Address): Address[] => [circle, CONFIG.fusd];
 
 export async function createCircle(organiser: UnifiedAccount, factory: Address, p: CircleParams) {
@@ -70,8 +71,8 @@ export async function read<T>(circle: Address, functionName: string, args: reado
   return (await publicClient.readContract({ address: circle, abi: circleAbi, functionName, args })) as T;
 }
 
-export async function join(m: UnifiedAccount, circle: Address): Promise<Hex> {
-  await ensureWindow(m, scope(circle), 4n);
+export async function join(m: UnifiedAccount, circle: Address, targets?: Address[]): Promise<Hex> {
+  await ensureWindow(m, targets ?? scope(circle), 4n);
   const allowance = (await publicClient.readContract({
     address: CONFIG.fusd,
     abi: ERC20_APPROVE,
@@ -82,24 +83,24 @@ export async function join(m: UnifiedAccount, circle: Address): Promise<Hex> {
   return send(m, circle, circleAbi, "join", [], 600_000n);
 }
 
-export async function pay(m: UnifiedAccount, circle: Address): Promise<Hex> {
-  await ensureWindow(m, scope(circle));
+export async function pay(m: UnifiedAccount, circle: Address, targets?: Address[]): Promise<Hex> {
+  await ensureWindow(m, targets ?? scope(circle));
   return send(m, circle, circleAbi, "pay", [], 400_000n);
 }
 
-export async function bid(m: UnifiedAccount, circle: Address, discountFusd: number): Promise<Hex> {
-  await ensureWindow(m, scope(circle));
+export async function bid(m: UnifiedAccount, circle: Address, discountFusd: number, targets?: Address[]): Promise<Hex> {
+  await ensureWindow(m, targets ?? scope(circle));
   const discount = BigInt(Math.round(discountFusd * 10 ** CONFIG.fusdDecimals));
   return send(m, circle, circleAbi, "bid", [discount], 300_000n);
 }
 
-export async function closeAuction(m: UnifiedAccount, circle: Address): Promise<Hex> {
-  await ensureWindow(m, scope(circle));
+export async function closeAuction(m: UnifiedAccount, circle: Address, targets?: Address[]): Promise<Hex> {
+  await ensureWindow(m, targets ?? scope(circle));
   return send(m, circle, circleAbi, "closeAuction", [], 1_500_000n);
 }
 
-export async function approveRelease(m: UnifiedAccount, circle: Address): Promise<Hex> {
-  await ensureWindow(m, scope(circle));
+export async function approveRelease(m: UnifiedAccount, circle: Address, targets?: Address[]): Promise<Hex> {
+  await ensureWindow(m, targets ?? scope(circle));
   return send(m, circle, circleAbi, "approveRelease", [], 300_000n);
 }
 
@@ -110,8 +111,8 @@ export async function signPayout(winner: UnifiedAccount, circle: Address, round:
   return bytesToHex(signature);
 }
 
-export async function release(winner: UnifiedAccount, circle: Address, recipient?: Address): Promise<Hex> {
-  await ensureWindow(winner, scope(circle));
+export async function release(winner: UnifiedAccount, circle: Address, recipient?: Address, targets?: Address[]): Promise<Hex> {
+  await ensureWindow(winner, targets ?? scope(circle));
   const round = await read<bigint>(circle, "currentRound");
   const to = recipient ?? (winner.evm as Address);
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600);
@@ -119,7 +120,7 @@ export async function release(winner: UnifiedAccount, circle: Address, recipient
   return send(winner, circle, circleAbi, "release", [to, deadline, signature], 2_500_000n);
 }
 
-export async function withdraw(m: UnifiedAccount, circle: Address): Promise<Hex> {
-  await ensureWindow(m, scope(circle));
+export async function withdraw(m: UnifiedAccount, circle: Address, targets?: Address[]): Promise<Hex> {
+  await ensureWindow(m, targets ?? scope(circle));
   return send(m, circle, circleAbi, "withdraw", [], 300_000n);
 }
