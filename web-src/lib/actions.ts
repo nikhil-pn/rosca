@@ -28,7 +28,7 @@ import {
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { circleAbi, factoryAbi } from "./abi.ts";
-import { NET, broadcastAs } from "./qore.ts";
+import { NET, balances, broadcastAs, convertCoinMsg } from "./qore.ts";
 
 export const REST = (typeof location !== "undefined" ? location.origin : "") + "/api/rest";
 const UNIT = 10n ** BigInt(NET.fusdDecimals);
@@ -147,19 +147,32 @@ export function reason(e: unknown): string {
 
 export const scope = (circle: Address): Address[] => [circle, NET.fusd];
 
-export async function createCircle(acc: UnifiedAccount, name: string): Promise<{ address: Address; tx: Hex }> {
+export interface NewCircle {
+  name: string;
+  /** fUSD per member per round, in whole dollars (cents allowed). */
+  share: number;
+  size: number;
+  roundSeconds: number;
+  maxDiscountBps: number;
+  feeBps: number;
+}
+
+/** Grace after a round's deadline before members may dissolve: a quarter of the round, 2 min to 3 days. */
+export const graceFor = (roundSeconds: number) => Math.min(Math.max(Math.round(roundSeconds / 4), 120), 3 * 86400);
+
+export async function createCircle(acc: UnifiedAccount, c: NewCircle): Promise<{ address: Address; tx: Hex }> {
   await ensureWindow(acc, [NET.factory]);
   const params = {
     token: NET.fusd,
-    share: 10n * UNIT,
-    size: 3,
-    roundLength: 120,
-    graceLength: 120,
-    maxDiscountBps: 3000,
-    feeBps: 200,
+    share: BigInt(Math.round(c.share * 100)) * (UNIT / 100n),
+    size: c.size,
+    roundLength: c.roundSeconds,
+    graceLength: graceFor(c.roundSeconds),
+    maxDiscountBps: c.maxDiscountBps,
+    feeBps: c.feeBps,
     quorumBps: 5001,
     securityBps: 5000,
-    name,
+    name: c.name,
   };
   const tx = await send(acc, NET.factory, factoryAbi as Abi, "createCircle", [params], 4_000_000n);
   const mine = (await pub.readContract({ address: NET.factory, abi: factoryAbi as Abi, functionName: "circlesOf", args: [acc.evm] })) as Address[];
@@ -219,4 +232,52 @@ export async function steal(acc: UnifiedAccount, circle: Address): Promise<{ tx:
   });
   const receipt = await pub.waitForTransactionReceipt({ hash: tx });
   return { tx, status: receipt.status, stranger };
+}
+
+// ---------------------------------------------------------------- live mode: real funding, real circles
+
+/** Bank balances on the native side: test QOR (uqor) and fUSD that a faucet sent as a bank coin. */
+export async function bankBalances(acc: UnifiedAccount): Promise<{ uqor: bigint; fusd: bigint }> {
+  const b = await balances(REST, acc.cosmos);
+  return { uqor: b.uqor ?? 0n, fusd: b[NET.fusdDenom] ?? 0n };
+}
+
+/** Faucets send fUSD as a bank coin. Move it to this wallet's EVM address as ERC-20 (signed with both keys). */
+export async function convertFusd(acc: UnifiedAccount, amount: bigint): Promise<string> {
+  return broadcastAs(REST, acc, "hybrid", [convertCoinMsg(acc.cosmos, acc.evm, amount)]);
+}
+
+export interface CircleInfo {
+  address: Address;
+  name: string;
+  share: bigint;
+  size: number;
+  roundLength: number;
+  maxDiscountBps: number;
+  feeBps: number;
+  organiser: Address;
+  memberCount: number;
+  phase: number;
+}
+
+export async function circleInfo(c: Address): Promise<CircleInfo> {
+  const [name, share, size, roundLength, maxDiscountBps, feeBps, organiser, memberCount, phase] = await Promise.all([
+    read<string>(c, "name"),
+    read<bigint>(c, "share"),
+    read<number>(c, "size"),
+    read<number>(c, "roundLength"),
+    read<number>(c, "maxDiscountBps"),
+    read<number>(c, "feeBps"),
+    read<Address>(c, "organiser"),
+    read<bigint>(c, "memberCount"),
+    read<number>(c, "phase"),
+  ]);
+  return { address: c, name, share, size: Number(size), roundLength: Number(roundLength), maxDiscountBps: Number(maxDiscountBps), feeBps: Number(feeBps), organiser, memberCount: Number(memberCount), phase: Number(phase) };
+}
+
+/** True only for circles the Rosca factory opened, so an invite link can't point at some other contract. */
+export async function isRoscaCircle(c: string): Promise<boolean> {
+  if (!/^0x[0-9a-fA-F]{40}$/.test(c)) return false;
+  const all = (await pub.readContract({ address: NET.factory, abi: factoryAbi as Abi, functionName: "circles" })) as Address[];
+  return all.some((a) => a.toLowerCase() === c.toLowerCase());
 }
