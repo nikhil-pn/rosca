@@ -235,4 +235,36 @@ contract RoscaCircle {
         _rounds[r].bidEnd = bidEnd;
         emit RoundStarted(r, start, bidEnd);
     }
+
+    // ---------------------------------------------------------------- paying
+
+    event Paid(uint256 indexed round, address indexed member, uint256 amount);
+
+    /// @notice Pay this round's share. Allowed until the auction ends.
+    function pay() external nonReentrant inPhase(Phase.Running) onlyMember {
+        uint256 r = currentRound;
+        Round storage rd = _rounds[r];
+        if (paid[r][msg.sender]) revert AlreadyPaid(r);
+        if (rd.closed || block.timestamp > rd.bidEnd) revert TooLate(r);
+
+        paid[r][msg.sender] = true;
+        rd.collected += share;
+        paidIn[msg.sender] += share;
+        onTimeRounds[msg.sender] += 1;
+
+        _pull(msg.sender, share);
+        emit Paid(r, msg.sender, share);
+    }
+
+    function _pull(address from, uint256 amount) internal {
+        (bool ok, bytes memory ret) =
+            address(token).call(abi.encodeCall(IERC20Minimal.transferFrom, (from, address(this), amount)));
+        if (!ok || (ret.length != 0 && !abi.decode(ret, (bool)))) revert TokenCallFailed();
+    }
+
+    function _push(address to, uint256 amount) internal {
+        if (amount == 0) return;
+        (bool ok, bytes memory ret) = address(token).call(abi.encodeCall(IERC20Minimal.transfer, (to, amount)));
+        if (!ok || (ret.length != 0 && !abi.decode(ret, (bool)))) revert TokenCallFailed();
+    }
 }
