@@ -5,7 +5,10 @@ import { renderFeed } from "./feed.js";
 import * as story from "./story.js";
 import { initTabs, renderPeople } from "./tabs.js";
 
-const $ = (id) => document.getElementById(id);
+const $ = (id) => document.getElementById(id) ?? NULL_EL;
+// Each page has only some of the live pieces; writes to missing ones go nowhere.
+const NULL_EL = new Proxy({ style: {} }, { get: (t, k) => (k in t ? t[k] : () => {}), set: () => true });
+const has = (id) => Boolean(document.getElementById(id));
 const PHASES = ["Forming", "Running", "Completed", "Dissolved"];
 const ICONS = ["◎", "★", "▦"];
 const CHIPS = 3;
@@ -37,7 +40,7 @@ function chipFor(c, i) {
 }
 
 function renderChips() {
-  if (!state.list.length) return;
+  if (!state.list.length || !has("circle-chips")) return;
   $("circle-chips").replaceChildren(...state.list.slice(0, CHIPS).map(chipFor));
 }
 
@@ -55,6 +58,7 @@ async function snapshot(address) {
 }
 
 async function refreshPhone() {
+  if (!has("balance")) return;
   const c = state.list.find((x) => x.address === state.selected);
   if (!c) return;
   const { info, rounds, paid, memberList, paidFlags } = await snapshot(c.address);
@@ -92,13 +96,14 @@ async function refreshPhone() {
 
 /** The newest circle drives the story: its step, countdown and feed. */
 async function refreshStory() {
+  if (!has("steps") && !has("feed")) return;
   const live = state.list[0];
   if (!live) return;
   const [snap, quorum] = await Promise.all([snapshot(live.address), chain.quorumNeeded(live.address)]);
   const round = snap.rounds[snap.info.currentRound - 1];
   story.highlightStep(story.stepOf(snap.info, round, snap.paid, quorum));
   story.renderHeader(snap.info, round);
-  await renderFeed(state.list.slice(0, 4), state.attacks, quorum);
+  if (has("feed")) await renderFeed(state.list.slice(0, 4), state.attacks, quorum);
   $("device-note").textContent = `Live on QoreChain testnet · updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
 }
 
@@ -118,6 +123,7 @@ async function loadCircles() {
 }
 
 async function loadAttacks() {
+  if (!has("attempts") && !has("st-attacks") && !has("feed")) return;
   const d = await story.deployments();
   state.attacks = d.attacks ?? [];
   const names = Object.fromEntries(state.list.map((c) => [c.address.toLowerCase(), c.name]));
@@ -127,6 +133,10 @@ async function loadAttacks() {
 const every = (ms, fn) => setInterval(() => fn().catch((e) => console.error("Rosca:", e)), ms);
 
 async function start() {
+  if (has("flow-ring")) {
+    const { mountFlowDemo } = await import("./ring.js");
+    mountFlowDemo($("flow-ring"), $("flow-caption"), $("flow-dots"));
+  }
   initTabs((tab) => {
     state.tab = tab;
     refreshPhone().catch(console.error);

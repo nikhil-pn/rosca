@@ -7,55 +7,56 @@
   <meta name="description" content="A chit fund (kuri, kameti) on QoreChain whose pot no single key can move. Payouts need the winner's post-quantum ML-DSA-87 signature and a majority of members.">
   <meta name="theme-color" content="#eeeeef">
   <meta property="og:title" content="Rosca · the savings circle no one can run away with">
-  <meta property="og:description" content="A chit fund on QoreChain. The pot moves only with a majority of members and the winner's ML-DSA-87 signature, checked on chain.">
+  <meta property="og:description" content="A chit fund (kuri, kameti) on QoreChain whose pot no single key can move. Payouts need the winner's post-quantum ML-DSA-87 signature and a majority of members.">
   <meta property="og:image" content="https://rosca.exprmnts.fun/og.png">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="preload" href="fonts/inter-500.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/layout.css">
-  <link rel="stylesheet" href="css/story.css">
-  <link rel="stylesheet" href="css/phone.css">
-  <link rel="stylesheet" href="css/wallet.css">
-  <link rel="stylesheet" href="css/sections.css">
-  <link rel="stylesheet" href="css/tabs.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/inter-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/glass.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/story.css">
+  <link rel="stylesheet" href="/css/phone.css">
+  <link rel="stylesheet" href="/css/wallet.css">
+  <link rel="stylesheet" href="/css/sections.css">
+  <link rel="stylesheet" href="/css/tabs.css">
 </head>
 <body>
-  <header class="site-nav">
-    <a class="logo" href="#top" aria-label="Rosca home">
-      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="8" rx="8" ry="3.2"/><path d="M4 8v4.5c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2V8c0 1.8-3.6 3.2-8 3.2S4 9.8 4 8Z"/></svg>
-      Rosca
-    </a>
-    <nav class="links" aria-label="Sections">
-      <a href="#how">How it works</a>
-      <a href="#live">Live</a>
-      <a href="#security">Security</a>
-      <a href="#proof">Proof</a>
-      <a href="https://github.com/nikhil-pn/rosca" target="_blank" rel="noopener">GitHub</a>
-    </nav>
-    <a class="gh" href="try.html">Try it</a>
-  </header>
-
-  <main class="layout" id="top">
-    <section class="hero">
-      <p class="eyebrow">Chit fund · Kuri · Kameti · on QoreChain</p>
-      <h1>The savings circle no one can run away with.</h1>
-      <p class="lede">For generations, friends, families and office teams in India have saved together in chit funds. Everyone pays in each month and one member takes the pot. The weak spot has always been the organiser, who holds the money.</p>
-      <p class="lede">In Rosca the pot sits in a contract with no owner. It moves only when a majority of members approves and the winner signs with a <strong>post-quantum ML-DSA-87 key</strong>, checked on chain.</p>
-      <div class="cta">
-        <a class="btn dark" href="try.html">Try it yourself</a>
-        <a class="btn" href="#live">Watch the live circle</a>
+  <div class="ambient" aria-hidden="true"></div>
+  <header class="nav-wrap">
+    <nav class="nav glass sheen" aria-label="Main">
+      <a class="brand" href="/"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="8" rx="8" ry="3.2"/><path d="M4 8v4.5c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2V8c0 1.8-3.6 3.2-8 3.2S4 9.8 4 8Z"/></svg>Rosca</a>
+      <div class="nav-links">
+        <a href="/how">How it works</a>
+        <a href="/live">Live</a>
+        <a href="/security">Security</a>
+        <a href="/proof">Proof</a>
       </div>
-      <dl class="stats" aria-live="polite">
-        <div><dt>Circles run</dt><dd class="num" id="st-circles">–</dd></div>
-        <div><dt>Rounds paid out</dt><dd class="num" id="st-rounds">–</dd></div>
-        <div><dt>Paid into pots</dt><dd class="num" id="st-volume">–</dd></div>
-        <div><dt>Thief attempts blocked</dt><dd class="num" id="st-attacks">–</dd></div>
-      </dl>
-    </section>
-
-    <aside class="device" aria-label="The Rosca app, live on the QoreChain testnet">
-      <section class="phone" aria-label="Rosca app">
+      <a class="btn-primary" href="https://app.rosca.exprmnts.fun">Open the app</a>
+      <button class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-sheet"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 8h16M4 16h16"/></svg></button>
+    </nav>
+    <div class="nav-sheet glass strong" id="nav-sheet" hidden>
+      <a href="/how">How it works</a>
+      <a href="/live">Live</a>
+      <a href="/security">Security</a>
+      <a href="/proof">Proof</a>
+      <a class="btn-primary" href="https://app.rosca.exprmnts.fun">Open the app</a>
+    </div>
+  </header>
+  <main class="page">
+    <section class="home-hero">
+      <div>
+        <p class="eyebrow">Chit fund · Kuri · Kameti · on QoreChain</p>
+        <h1 class="hero-title">The savings circle no one can run away with.</h1>
+        <p class="lede">Save with friends, family or your office the way India always has: everyone pays in each month and one member takes the pot. In Rosca nobody holds the money. The pot moves only with a majority of members and the winner's post-quantum signature.</p>
+        <div class="cta">
+          <a class="btn-primary" href="https://app.rosca.exprmnts.fun">Open the app</a>
+          <a class="btn-glass" href="/live">Watch a live circle</a>
+        </div>
+        <div class="trust"><span class="glass">Live on QoreChain testnet</span><span class="glass">ML-DSA-87 payouts</span><span class="glass">No owner, no admin</span></div>
+      </div>
+      <aside class="device" aria-label="The Rosca app, live on the QoreChain testnet">
+        <section class="phone" aria-label="Rosca app">
         <div class="status-bar" aria-hidden="true">
           <span class="time">9:41</span>
           <span class="icons">
@@ -143,76 +144,39 @@
               <svg width="22" height="20" viewBox="0 0 26 22" aria-hidden="true"><circle cx="8" cy="8" r="6" opacity=".55"/><circle cx="17" cy="11" r="6" opacity=".35"/><circle cx="13" cy="17" r="4" opacity=".25"/></svg>
             </button>
           </div>
-          <a class="dock-plus" href="try.html" aria-label="Start your own circle">
+          <a class="dock-plus" href="https://app.rosca.exprmnts.fun" aria-label="Open the app">
             <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           </a>
         </footer>
             </section>
-      <p class="device-note"><span class="dot"></span><span id="device-note">Reading the QoreChain testnet…</span></p>
-    </aside>
+        <p class="device-note"><span class="dot"></span><span id="device-note">Reading the QoreChain testnet…</span></p>
+      </aside>
+    </section>
 
-    <div class="rest">
-      <section class="block" id="how">
-        <h2>How a round works</h2>
-        <p class="sub">Five steps, every round, like a chit fund you already know. The highlighted step is where the live circle is right now.</p>
-        <ol class="steps" id="steps">
-          <li data-step="pay"><span class="n">1</span><div><h3>Pay</h3><p>Every member pays the monthly share into the circle. Only the contract holds it.</p></div></li>
-          <li data-step="bid"><span class="n">2</span><div><h3>Bid</h3><p>Members who need money now bid the discount they will accept. The highest discount wins, as in a real chit auction, capped at 30%.</p></div></li>
-          <li data-step="close"><span class="n">3</span><div><h3>Close</h3><p>When bidding ends, anyone can close the auction. With no bids, the earliest member who has not won yet takes the pot.</p></div></li>
-          <li data-step="approve"><span class="n">4</span><div><h3>Approve</h3><p>A majority of members approve the payout.</p></div></li>
-          <li data-step="release"><span class="n">5</span><div><h3>Release</h3><p>The winner signs the payout with their <b>ML-DSA-87</b> key. The contract checks it on chain with <code>pqcVerify</code>, pays the winner and shares the discount out to every member.</p></div></li>
-        </ol>
-        <p class="aside">Winners keep paying: part of their pot is held back against their future shares. If a round stalls, members can dissolve the circle and take back what they paid in.</p>
+    <section class="features">
+      <div class="feature glass sheen"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><h3>Nobody holds the pot</h3><p>The money sits in a contract with no owner. The organiser can open a circle, and that's all.</p></div>
+      <div class="feature glass sheen"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2M14 9l2 2"/></svg></span><h3>Signed for the quantum age</h3><p>The winner signs each payout with ML-DSA-87. A stolen phone key, or a future quantum computer, can't move it.</p></div>
+      <div class="feature glass sheen"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="4" r="1.6"/><circle cx="19" cy="15" r="1.6"/><circle cx="5" cy="15" r="1.6"/></svg></span><h3>The chit fund you know</h3><p>Monthly shares, a discount auction, a majority to approve, and the discount shared back to everyone.</p></div>
+    </section>
+
+    <dl class="stats" aria-live="polite">
+      <div class="glass"><dt>Circles run</dt><dd class="num" id="st-circles">–</dd></div>
+      <div class="glass"><dt>Rounds paid out</dt><dd class="num" id="st-rounds">–</dd></div>
+      <div class="glass"><dt>Paid into pots</dt><dd class="num" id="st-volume">–</dd></div>
+      <div class="glass"><dt>Thief attempts blocked</dt><dd class="num" id="st-attacks">–</dd></div>
+    </dl>
+
+      <section class="cta-band glass sheen">
+        <div><h2>Run a round yourself</h2><p>Open the app, make a wallet with a post-quantum key and play a real circle on the testnet. About five minutes.</p></div>
+        <a class="btn-primary" href="https://app.rosca.exprmnts.fun">Open the app</a>
       </section>
-
-      <section class="block" id="live">
-        <h2>Live on the QoreChain testnet</h2>
-        <p class="sub">Five demo members run a real circle around the clock: one round an hour. Every line below is an on-chain transaction.</p>
-        <div class="feed-card">
-          <header class="feed-head">
-            <span id="feed-circle">Loading the circle…</span>
-            <span class="feed-timer" id="feed-timer"></span>
-          </header>
-          <ul class="feed" id="feed"></ul>
-        </div>
-      </section>
-
-      <section class="block" id="security">
-        <h2>Who can move the pot?</h2>
-        <p class="sub">Only the winner and a majority of members, together. Nobody can do it alone.</p>
-        <div class="who">
-          <div class="who-row no"><span class="mark">✕</span><div><h3>The organiser</h3><p>Opens the circle and nothing else. The contract has no owner, no admin, no upgrade and no withdraw function.</p></div></div>
-          <div class="who-row no"><span class="mark">✕</span><div><h3>A thief with a member's wallet key</h3><p>A stolen secp256k1 key cannot make an ML-DSA-87 signature. Each member's EVM window is also scoped to this circle and fUSD, and only their post-quantum key can open a wider one.</p></div></div>
-          <div class="who-row no"><span class="mark">✕</span><div><h3>A future quantum computer</h3><p>It could recover an ECDSA key from its public key. It cannot forge ML-DSA-87 (NIST FIPS 204, security level 5).</p></div></div>
-          <div class="who-row yes"><span class="mark">✓</span><div><h3>The winner, with a majority</h3><p>The payout needs most members' approvals and the winner's ML-DSA-87 signature over this circle, this round, the recipient, the amount and a deadline.</p></div></div>
-        </div>
-        <div class="thief">
-          <h3>The thief test, run for real</h3>
-          <p>Once per circle the keeper plays a thief who has stolen the winner's classical key. The thief sends <code>release</code> to their own address, either with a signature from their own ML-DSA-87 key or with the winner's real signature replayed for another recipient. Every attempt lands on chain and fails.</p>
-          <ul class="attempts" id="attempts"><li class="empty">The first attempt runs in round 2 of the live circle.</li></ul>
-        </div>
-      </section>
-
-      <section class="block" id="proof">
-        <h2>Proof, for the judges</h2>
-        <p class="sub">Each requirement of the Post-Quantum dApp category, and where to check it.</p>
-        <div class="proof">
-          <div class="proof-row"><h3>pqcVerify on chain</h3><p><code>release</code> reads the winner's key from <code>pqcKeyStatus</code> (0x…0A02) and verifies their 4,627-byte ML-DSA-87 signature with <code>pqcVerify</code> (0x…0A01).</p><a href="https://github.com/nikhil-pn/rosca/blob/main/src/libraries/PqcGate.sol" target="_blank" rel="noopener">PqcGate.sol ↗</a></div>
-          <div class="proof-row"><h3>Post-quantum key to join</h3><p><code>join</code> only accepts accounts with a registered ML-DSA-87 key and proof of possession.</p><a href="https://github.com/nikhil-pn/rosca/blob/main/src/RoscaCircle.sol" target="_blank" rel="noopener">RoscaCircle.sol ↗</a></div>
-          <div class="proof-row"><h3>Scoped EVM window</h3><p>Each member opens a window limited to the circle and the fUSD token, signed hybrid with their post-quantum key.</p><a href="https://github.com/nikhil-pn/rosca/blob/main/scripts/lib/evm.ts" target="_blank" rel="noopener">evm.ts ↗</a></div>
-          <div class="proof-row"><h3>Foundry tests</h3><p>61 unit, fuzz and invariant tests: a stolen classical key can't redirect the pot, the organiser can't take it, and money is conserved over 128,000 random actions.</p><a href="https://github.com/nikhil-pn/rosca/tree/main/test" target="_blank" rel="noopener">test/ ↗</a></div>
-          <div class="proof-row"><h3>Live transactions</h3><p>The factory, the first full round and every circle the keeper runs, with explorer links.</p><a href="https://github.com/nikhil-pn/rosca/blob/main/docs/PROOF.md" target="_blank" rel="noopener">PROOF.md ↗</a></div>
-          <div class="proof-row"><h3>Two-stage QCAI audit</h3><p>Report before fixes and report after fixes.</p><span class="soon" id="audit-link">in progress</span></div>
-        </div>
-      </section>
-
       <footer class="foot">
         <p>Rosca · built for QoreChain's <i>Build Before Q-Day</i> by Nikhil and Hina · MIT license</p>
-        <p><a href="https://github.com/nikhil-pn/rosca" target="_blank" rel="noopener">GitHub</a> · <a href="https://build.qorechain.io/p/rosca" target="_blank" rel="noopener">Project page</a> · <a id="factory-link" href="https://explore.qore.network/address/0x366d6a029d94a98ba4d93e2eb4dbf07720387d39" target="_blank" rel="noopener">Factory on the explorer</a></p>
+        <p><a href="https://github.com/nikhil-pn/rosca" target="_blank" rel="noopener">GitHub</a> · <a href="https://build.qorechain.io/p/rosca" target="_blank" rel="noopener">Project page</a> · <a href="https://explore.qore.network/address/0x366d6a029d94a98ba4d93e2eb4dbf07720387d39" target="_blank" rel="noopener">Factory on the explorer</a></p>
         <p class="fine">Testnet only. fUSD is the fest's test dollar and has no value.</p>
       </footer>
-    </div>
   </main>
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="/js/nav.js"></script>
+  <script type="module" src="/js/app.js"></script>
 </body>
 </html>

@@ -3,7 +3,9 @@ import { CONFIG } from "./config.js";
 import * as chain from "./chain.js";
 import { usd } from "./feed.js";
 
-const $ = (id) => document.getElementById(id);
+// Each page has only some of these elements; writes to missing ones go nowhere.
+const NULL_EL = new Proxy({ style: {} }, { get: (t, k) => (k in t ? t[k] : () => {}), set: () => true });
+const $ = (id) => document.getElementById(id) ?? NULL_EL;
 
 /** Totals over every circle the factory has opened. */
 export function renderStats(infos, attacks) {
@@ -57,7 +59,7 @@ export function renderHeader(info, round) {
 
 /** The keeper's thief attempts, each checked against its on-chain receipt. */
 export async function renderAttempts(attacks, names) {
-  if (!attacks.length) return;
+  if (!attacks.length || !document.getElementById("attempts")) return;
   const rows = await Promise.all(
     attacks.slice(-6).reverse().map(async (a) => {
       const status = await chain.receiptStatus(a.tx).catch(() => a.status);

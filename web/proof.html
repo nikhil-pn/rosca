@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Rosca proof · for the judges</title>
+  <meta name="description" content="Where to check each Post-Quantum dApp requirement for Rosca: pqcVerify, scoped windows, tests and live transactions.">
+  <meta name="theme-color" content="#eeeeef">
+  <meta property="og:title" content="Rosca proof · for the judges">
+  <meta property="og:description" content="Where to check each Post-Quantum dApp requirement for Rosca: pqcVerify, scoped windows, tests and live transactions.">
+  <meta property="og:image" content="https://rosca.exprmnts.fun/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/inter-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/glass.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/story.css">
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+  <header class="nav-wrap">
+    <nav class="nav glass sheen" aria-label="Main">
+      <a class="brand" href="/"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="8" rx="8" ry="3.2"/><path d="M4 8v4.5c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2V8c0 1.8-3.6 3.2-8 3.2S4 9.8 4 8Z"/></svg>Rosca</a>
+      <div class="nav-links">
+        <a href="/how">How it works</a>
+        <a href="/live">Live</a>
+        <a href="/security">Security</a>
+        <a href="/proof" aria-current="page">Proof</a>
+      </div>
+      <a class="btn-primary" href="https://app.rosca.exprmnts.fun">Open the app</a>
+      <button class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-sheet"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 8h16M4 16h16"/></svg></button>
+    </nav>
+    <div class="nav-sheet glass strong" id="nav-sheet" hidden>
+      <a href="/how">How it works</a>
+      <a href="/live">Live</a>
+      <a href="/security">Security</a>
+      <a href="/proof" aria-current="page">Proof</a>
+      <a class="btn-primary" href="https://app.rosca.exprmnts.fun">Open the app</a>
+    </div>
+  </header>
+  <main class="page">
+    <header class="page-head">
+      <p class="eyebrow">Proof</p>
+      <h1>Check every claim on chain.</h1>
+      <p class="lede">Each requirement of the Post-Quantum dApp category, and where to check it.</p>
+    </header>
+    <section class="block" id="proof">
+        <div class="proof">
+          <div class="proof-row"><h3>pqcVerify on chain</h3><p><code>release</code> reads the winner's key from <code>pqcKeyStatus</code> (0x…0A02) and verifies their 4,627-byte ML-DSA-87 signature with <code>pqcVerify</code> (0x…0A01).</p><a href="https://github.com/nikhil-pn/rosca/blob/main/src/libraries/PqcGate.sol" target="_blank" rel="noopener">PqcGate.sol ↗</a></div>
+          <div class="proof-row"><h3>Post-quantum key to join</h3><p><code>join</code> only accepts accounts with a registered ML-DSA-87 key and proof of possession.</p><a href="https://github.com/nikhil-pn/rosca/blob/main/src/RoscaCircle.sol" target="_blank" rel="noopener">RoscaCircle.sol ↗</a></div>
+          <div class="proof-row"><h3>Scoped EVM window</h3><p>Each member opens a window limited to the circle and the fUSD token, signed hybrid with their post-quantum key.</p><a href="https://github.com/nikhil-pn/rosca/blob/main/scripts/lib/evm.ts" target="_blank" rel="noopener">evm.ts ↗</a></div>
+          <div class="proof-row"><h3>Foundry tests</h3><p>61 unit, fuzz and invariant tests: a stolen classical key can't redirect the pot, the organiser can't take it, and money is conserved over 128,000 random actions.</p><a href="https://github.com/nikhil-pn/rosca/tree/main/test" target="_blank" rel="noopener">test/ ↗</a></div>
+          <div class="proof-row"><h3>Live transactions</h3><p>The factory, the first full round and every circle the keeper runs, with explorer links.</p><a href="https://github.com/nikhil-pn/rosca/blob/main/docs/PROOF.md" target="_blank" rel="noopener">PROOF.md ↗</a></div>
+          <div class="proof-row"><h3>Two-stage QCAI audit</h3><p>Report before fixes and report after fixes.</p><span class="soon" id="audit-link">in progress</span></div>
+        </div>
+      </section>
+      <section class="cta-band glass sheen">
+        <div><h2>Run a round yourself</h2><p>Open the app, make a wallet with a post-quantum key and play a real circle on the testnet. About five minutes.</p></div>
+        <a class="btn-primary" href="https://app.rosca.exprmnts.fun">Open the app</a>
+      </section>
+      <footer class="foot">
+        <p>Rosca · built for QoreChain's <i>Build Before Q-Day</i> by Nikhil and Hina · MIT license</p>
+        <p><a href="https://github.com/nikhil-pn/rosca" target="_blank" rel="noopener">GitHub</a> · <a href="https://build.qorechain.io/p/rosca" target="_blank" rel="noopener">Project page</a> · <a href="https://explore.qore.network/address/0x366d6a029d94a98ba4d93e2eb4dbf07720387d39" target="_blank" rel="noopener">Factory on the explorer</a></p>
+        <p class="fine">Testnet only. fUSD is the fest's test dollar and has no value.</p>
+      </footer>
+  </main>
+  <script type="module" src="/js/nav.js"></script>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

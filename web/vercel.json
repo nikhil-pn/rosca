@@ -1,9 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
-    { "source": "/api/rest/:path*", "destination": "https://api-testnet.qore.host/:path*" }
-  ],
-  "functions": {
-    "api/faucet.mjs": { "maxDuration": 60 }
-  }
+  "cleanUrls": true,
+  "redirects": [
+    { "source": "/try", "destination": "https://app.rosca.exprmnts.fun/", "permanent": false },
+    { "source": "/try.html", "destination": "https://app.rosca.exprmnts.fun/", "permanent": false }
+  ]
 }

@@ -1,6 +1,6 @@
 /* The story column: hero, steps, live feed, security and proof. */
 .eyebrow { color: var(--muted); font-size: 14px; font-weight: 500; letter-spacing: 0; margin: 40px 0 18px; }
-.hero h1 { font-size: clamp(40px, 5.2vw, 64px); line-height: 1.02; font-weight: 600; letter-spacing: -0.045em; max-width: 12ch; }
+.hero-title { font-size: clamp(40px, 5.2vw, 64px); line-height: 1.02; font-weight: 600; letter-spacing: -0.045em; max-width: 12ch; }
 .lede { font-size: 18px; line-height: 1.55; color: #3a3a3e; max-width: 34em; margin-top: 20px; }
 .lede strong { color: var(--ink); font-weight: 600; }
 .cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
@@ -99,3 +99,22 @@ code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.88em
 .foot { margin-top: 96px; padding-top: 24px; border-top: 1px solid #dcdce0; color: var(--muted); font-size: 14px; line-height: 1.8; }
 .foot a { color: #48484c; }
 .foot .fine { font-size: 13px; }
+
+/* ---------------------------------------------------------------- glass versions of the cards */
+.steps li, .feed-card, .who-row, .proof, .stats div {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--glass-shadow);
+}
+.steps li { border-radius: 24px; }
+.thief { background: var(--glass-dark); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.45); }
+.page .block { margin-top: 32px; }
+.page .stats { margin-top: 28px; }
+.page-head + .stats + .block { margin-top: 12px; }
+.feed li:hover { background: rgba(255, 255, 255, 0.6); }
+
+/* ---------------------------------------------------------------- money flow figure (how page) */
+.flow { margin-top: 32px; padding: 28px 24px 22px; border-radius: 30px; display: grid; justify-items: center; gap: 14px; }
+.flow figcaption { font-size: 16px; color: #3a3a3e; text-align: center; min-height: 48px; max-width: 30em; line-height: 1.5; }
