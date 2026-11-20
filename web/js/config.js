@@ -8,6 +8,8 @@ export const CONFIG = {
   fusdDecimals: 6,
   /** The committed deployments record, which also lists the keeper's thief attempts. */
   deployments: "https://raw.githubusercontent.com/nikhil-pn/rosca/main/deployments/testnet.json",
+  /** The keeper's organiser account: the site's live circle only shows circles it opened. */
+  keeper: "0x0ec42d73ed8a38dd6573d3ca10212952672f8a0e",
 };
 
 // The five demo members the keeper plays, and the organiser. Throwaway testnet accounts.

@@ -111,8 +111,8 @@ async function loadCircles() {
   const addrs = await chain.circles();
   const infos = await Promise.all(addrs.map((a) => chain.circleInfo(a)));
   story.renderStats(infos, state.attacks);
-  // The story follows the keeper's circles. Visitors' "Try" circles and the stalled first test stay out of it.
-  const fresh = infos.filter((c) => !c.name.startsWith("Try · ") && c.name !== "Test run").reverse();
+  // The site follows the keeper's demo circles only: not visitors' "Try" circles, not people's live circles.
+  const fresh = infos.filter((c) => c.organiser.toLowerCase() === CONFIG.keeper && c.name !== "Test run").reverse();
   const newest = fresh[0]?.address;
   if (!state.selected || (state.list[0] && state.list[0].address !== newest && state.selected === state.list[0].address)) {
     state.selected = newest ?? null;
