@@ -5,6 +5,6 @@ node_modules/
 out/
 cache/
 broadcast/*/31337/
-lib/
+/lib/
 *.key
 .scratch/
