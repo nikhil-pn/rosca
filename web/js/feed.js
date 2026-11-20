@@ -55,11 +55,15 @@ function ago(ts) {
   return `${Math.floor(s / 86400)}d ago`;
 }
 
-const seen = new Set();
-let first = true;
+const seenBy = new Map();
 
-/** Render the feed for `circles` ({address, name}[]) plus `attacks` from the deployments record. */
-export async function renderFeed(circles, attacks, quorum) {
+/** Render the feed for `circles` ({address, name}[]) plus `attacks` from the deployments record,
+ * into the list `target`, at most `limit` lines. */
+export async function renderFeed(circles, attacks, quorum, target = "feed", limit = 40) {
+  if (!seenBy.has(target)) seenBy.set(target, { seen: new Set(), first: true });
+  const mem = seenBy.get(target);
+  const wanted = new Set(circles.map((c) => c.address.toLowerCase()));
+  attacks = attacks.filter((a) => wanted.has(a.circle.toLowerCase()));
   const names = Object.fromEntries(circles.map((c) => [c.address.toLowerCase(), c.name]));
   const logs = await chain.recentLogs(circles.map((c) => c.address));
   const items = [];
@@ -69,7 +73,7 @@ export async function renderFeed(circles, attacks, quorum) {
     if (line) items.push({ key: log.transactionHash + log.logIndex, block: Number(BigInt(log.blockNumber)), idx: Number(BigInt(log.logIndex)), tx: log.transactionHash, line });
   }
   items.sort((a, b) => b.block - a.block || b.idx - a.idx);
-  const top = items.slice(0, 40);
+  const top = items.slice(0, limit);
   const withTime = await Promise.all(top.map(async (it) => ({ ...it, ts: await chain.blockTime(it.block) })));
   for (const a of attacks) {
     const ts = Math.floor(new Date(a.at).getTime() / 1000);
@@ -80,17 +84,17 @@ export async function renderFeed(circles, attacks, quorum) {
   }
   withTime.sort((a, b) => b.ts - a.ts);
 
-  const ul = document.getElementById("feed");
+  const ul = document.getElementById(target);
   if (!withTime.length) {
     ul.innerHTML = '<li class="empty">No transactions in the last few hours yet.</li>';
     return;
   }
   ul.replaceChildren(
-    ...withTime.slice(0, 40).map((it) => {
+    ...withTime.slice(0, limit).map((it) => {
       const [icon, kind, text, sub] = it.line;
       const li = document.createElement("li");
-      if (!first && !seen.has(it.key)) li.className = "fresh";
-      seen.add(it.key);
+      if (!mem.first && !mem.seen.has(it.key)) li.className = "fresh";
+      mem.seen.add(it.key);
       const ic = document.createElement("span");
       ic.className = "ic " + kind;
       ic.textContent = icon;
@@ -110,5 +114,5 @@ export async function renderFeed(circles, attacks, quorum) {
       return li;
     }),
   );
-  first = false;
+  mem.first = false;
 }
