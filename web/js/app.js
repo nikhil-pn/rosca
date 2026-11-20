@@ -1,8 +1,9 @@
 // Fills the phone and the story with live data from the QoreChain testnet.
-import { CONFIG } from "./config.js";
+import { CONFIG, who } from "./config.js";
 import * as chain from "./chain.js";
 import { renderFeed } from "./feed.js";
 import * as story from "./story.js";
+import { initTabs, renderPeople } from "./tabs.js";
 
 const $ = (id) => document.getElementById(id);
 const PHASES = ["Forming", "Running", "Completed", "Dissolved"];
@@ -18,7 +19,7 @@ function money(units) {
   return `$${whole}<span class="dec">.${dec}</span>`;
 }
 
-const state = { list: [], selected: null, attacks: [] };
+const state = { list: [], selected: null, attacks: [], tab: "wallet" };
 
 function chipFor(c, i) {
   const b = document.createElement("button");
@@ -56,7 +57,15 @@ async function snapshot(address) {
 async function refreshPhone() {
   const c = state.list.find((x) => x.address === state.selected);
   if (!c) return;
-  const { info, rounds, paid } = await snapshot(c.address);
+  const { info, rounds, paid, memberList, paidFlags } = await snapshot(c.address);
+  if (state.tab === "members") {
+    const won = await Promise.all(memberList.map((m) => chain.hasWon(c.address, m)));
+    renderPeople(memberList.map((m, i) => ({ name: who(m), paid: paidFlags[i], won: won[i] })));
+  }
+  if (state.tab === "activity") {
+    const quorum = await chain.quorumNeeded(c.address);
+    await renderFeed([c], state.attacks, quorum, "phone-feed", 12);
+  }
   const saved = rounds.reduce((s, r) => s + r.collected, 0n);
   const shared = rounds.filter((r) => r.released).reduce((s, r) => s + r.discount, 0n);
   $("balance").innerHTML = money(saved);
@@ -116,6 +125,10 @@ async function loadAttacks() {
 const every = (ms, fn) => setInterval(() => fn().catch((e) => console.error("Rosca:", e)), ms);
 
 async function start() {
+  initTabs((tab) => {
+    state.tab = tab;
+    refreshPhone().catch(console.error);
+  });
   try {
     await loadCircles();
     await Promise.all([refreshPhone(), loadAttacks()]);
