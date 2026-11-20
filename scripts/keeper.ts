@@ -226,8 +226,27 @@ async function discover(): Promise<void> {
   scanned = all.length;
 }
 
+/** Bots lock money in several circles at once, so keep their wallets topped up (checked every 5 min). */
+let botsChecked = 0;
+async function topUpBots(): Promise<void> {
+  if (Date.now() - botsChecked < 300_000) return;
+  botsChecked = Date.now();
+  for (const b of bots) {
+    const qor = await publicClient.getBalance({ address: b.evm as Address });
+    if (qor < 15n * 10n ** 17n) log(`top up bot ${b.evm.slice(0, 8)}: 3 QOR ${await fundQor(b.cosmos, 3_000_000n)}`);
+    const fusd = (await publicClient.readContract({ address: CONFIG.fusd, abi: ERC20, functionName: "balanceOf", args: [b.evm as Address] })) as bigint;
+    if (fusd < 60n * UNIT) log(`top up bot ${b.evm.slice(0, 8)}: fUSD ${await fundFusd(b.evm, 100n * UNIT - fusd)}`);
+  }
+}
+
 async function tryStep(circle: Address): Promise<void> {
   const scope = botScope();
+  // A round nobody can finish (e.g. the only member left to win didn't pay) is dissolved after the
+  // grace period, so everyone gets back what they put in.
+  if (await c.read<boolean>(circle, "isStalled")) {
+    log(`try dissolve stalled ${circle.slice(0, 8)}`, await c.dissolve(bots[0], circle, scope));
+    return;
+  }
   const phase = PHASE[await c.read<number>(circle, "phase")];
   if (phase === "Completed" || phase === "Dissolved") {
     for (const b of bots) {
@@ -282,6 +301,7 @@ async function tryStep(circle: Address): Promise<void> {
 
 async function tryTick(): Promise<void> {
   await discover();
+  if (tracked.size) await topUpBots().catch((e) => log("bot top-up failed:", e instanceof Error ? e.message.split("\n")[0] : e));
   for (const [circle, seen] of tracked) {
     if (Date.now() - seen > TRY_MAX_AGE) {
       tracked.delete(circle);

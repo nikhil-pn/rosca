@@ -124,3 +124,9 @@ export async function withdraw(m: UnifiedAccount, circle: Address, targets?: Add
   await ensureWindow(m, targets ?? scope(circle));
   return send(m, circle, circleAbi, "withdraw", [], 300_000n);
 }
+
+/** Dissolve a stalled circle: money left goes back in proportion to what each member put in. */
+export async function dissolve(m: UnifiedAccount, circle: Address, targets?: Address[]): Promise<Hex> {
+  await ensureWindow(m, targets ?? scope(circle));
+  return send(m, circle, circleAbi, "dissolve", [], 600_000n);
+}
