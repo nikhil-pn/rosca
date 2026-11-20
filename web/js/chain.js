@@ -25,6 +25,7 @@ const SEL = {
   members: "0xbdd4d18d",
   paid: "0xa031fb7f",
   quorumNeeded: "0xcb571211",
+  hasWon: "0xa52b2b88",
 };
 
 const word = (hex, i) => hex.slice(2 + i * 64, 2 + (i + 1) * 64);
@@ -118,4 +119,8 @@ export async function receiptStatus(hash) {
 
 export async function quorumNeeded(c) {
   return Number(uint(word(await call(c, SEL.quorumNeeded), 0)));
+}
+
+export async function hasWon(c, member) {
+  return uint(word(await call(c, SEL.hasWon + padAddr(member)), 0)) === 1n;
 }
