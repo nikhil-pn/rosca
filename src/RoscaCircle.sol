@@ -133,6 +133,9 @@ contract RoscaCircle {
 
     constructor(Params memory p, address organiser_) {
         if (p.token == address(0) || organiser_ == address(0)) revert ZeroAddress();
+        // A call to an address with no code "succeeds" with empty return data, so a token that is
+        // not a contract would let pay() record money that never arrived.
+        if (p.token.code.length == 0) revert BadParams("token");
         if (p.share == 0) revert BadParams("share");
         if (p.size < 2 || p.size > MAX_MEMBERS) revert BadParams("size");
         if (p.roundLength < 60) revert BadParams("roundLength");
@@ -256,6 +259,9 @@ contract RoscaCircle {
         emit Paid(r, msg.sender, share);
     }
 
+    /// @dev Both token helpers check the call succeeded and, if the token returns a value, that it
+    /// is true. The token always has code (checked in the constructor). Every function that moves
+    /// money is nonReentrant and finishes its state changes before calling the token.
     function _pull(address from, uint256 amount) internal {
         (bool ok, bytes memory ret) =
             address(token).call(abi.encodeCall(IERC20Minimal.transferFrom, (from, address(this), amount)));
