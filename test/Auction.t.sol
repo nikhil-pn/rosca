@@ -63,6 +63,7 @@ contract AuctionTest is RoscaBase {
 
     function test_close_tooEarlyReverts() public {
         vm.expectRevert(abi.encodeWithSelector(RoscaCircle.TooEarly.selector, 1));
+        vm.prank(people[0]);
         circle.closeAuction();
     }
 
@@ -70,6 +71,7 @@ contract AuctionTest is RoscaBase {
         vm.prank(people[3]);
         circle.bid(70e18);
         endBidding();
+        vm.prank(people[0]);
         circle.closeAuction();
         RoscaCircle.Round memory r = circle.getRound(1);
         assertTrue(r.closed);
@@ -80,6 +82,7 @@ contract AuctionTest is RoscaBase {
 
     function test_close_noBidGivesEarliestEligibleNoDiscount() public {
         endBidding();
+        vm.prank(people[0]);
         circle.closeAuction();
         RoscaCircle.Round memory r = circle.getRound(1);
         assertEq(r.winner, people[0]);
@@ -88,8 +91,10 @@ contract AuctionTest is RoscaBase {
 
     function test_close_twiceReverts() public {
         endBidding();
+        vm.prank(people[0]);
         circle.closeAuction();
         vm.expectRevert(abi.encodeWithSelector(RoscaCircle.AlreadyClosed.selector, 1));
+        vm.prank(people[0]);
         circle.closeAuction();
     }
 
@@ -97,6 +102,7 @@ contract AuctionTest is RoscaBase {
         vm.prank(people[1]);
         circle.bid(40e18);
         endBidding();
+        vm.prank(people[0]);
         circle.closeAuction();
         approveBy(circle.quorumNeeded());
         releaseTo(people[1]);

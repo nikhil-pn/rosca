@@ -15,6 +15,7 @@ contract ReleaseTest is RoscaBase {
         vm.prank(people[2]);
         circle.bid(100e18);
         endBidding();
+        vm.prank(people[0]);
         circle.closeAuction();
         winner = people[2];
     }

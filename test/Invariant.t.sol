@@ -49,6 +49,7 @@ contract CircleHandler is Test {
         if (circle.phase() != RoscaCircle.Phase.Running) return;
         RoscaCircle.Round memory rd = circle.getRound(circle.currentRound());
         if (rd.closed || block.timestamp <= rd.bidEnd) return;
+        vm.prank(people[0]);
         try circle.closeAuction() {} catch {}
     }
 

@@ -19,6 +19,7 @@ contract FuzzTest is RoscaBase {
             circle.bid(discount);
         }
         endBidding();
+        vm.prank(people[0]);
         circle.closeAuction();
         (uint256 payout, uint256 fee, uint256 dividend, uint256 held) = circle.quotePayout(1);
         assertEq(payout + fee + dividend + held, SHARE * SIZE);
@@ -39,6 +40,7 @@ contract FuzzTest is RoscaBase {
         vm.prank(people[1]);
         circle.bid(10e18);
         endBidding();
+        vm.prank(people[0]);
         circle.closeAuction();
         approveBy(3);
         vm.assume(signer != people[1]);

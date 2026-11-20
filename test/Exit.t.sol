@@ -82,6 +82,7 @@ contract ExitTest is RoscaBase {
             circle.pay();
         }
         endBidding();
+        vm.prank(people[0]);
         circle.closeAuction();
         assertTrue(circle.paid(2, people[1]), "covered from security");
         assertEq(circle.security(people[1]), held - SHARE);
@@ -103,6 +104,7 @@ contract ExitTest is RoscaBase {
     function test_dissolve_refundsWhatEachPutIn() public {
         payAll();
         endBidding();
+        vm.prank(people[0]);
         circle.closeAuction();
         vm.warp(block.timestamp + GRACE + 1);
         vm.prank(people[0]);

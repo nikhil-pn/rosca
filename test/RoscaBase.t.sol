@@ -133,6 +133,7 @@ abstract contract RoscaBase is Test {
             circle.bid(discount);
         }
         endBidding();
+        vm.prank(people[0]);
         circle.closeAuction();
         approveBy(circle.quorumNeeded());
         releaseTo(circle.getRound(circle.currentRound()).winner);
