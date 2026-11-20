@@ -8,6 +8,14 @@ broadcast/*/31337/
 /lib/
 *.key
 .scratch/
-# Built by `npm run build:web` before each deploy (sources in web-src/)
-web/js/try.js
+# Built by `npm run build:app` before each app deploy (sources in web-src/, shared styles in web/)
 web/api/
+web/js/try.js
+web-app/js/app.js
+web-app/api/
+web-app/fonts/
+web-app/favicon.svg
+web-app/css/base.css
+web-app/css/glass.css
+web-app/css/wallet.css
+web-app/css/ring.css

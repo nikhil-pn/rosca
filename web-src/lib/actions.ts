@@ -27,8 +27,8 @@ import {
   type Hex,
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { circleAbi, factoryAbi } from "../lib/abi.ts";
-import { NET, broadcastAs } from "../lib/qore.ts";
+import { circleAbi, factoryAbi } from "./abi.ts";
+import { NET, broadcastAs } from "./qore.ts";
 
 export const REST = (typeof location !== "undefined" ? location.origin : "") + "/api/rest";
 const UNIT = 10n ** BigInt(NET.fusdDecimals);
