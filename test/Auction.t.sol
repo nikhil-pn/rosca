@@ -94,7 +94,12 @@ contract AuctionTest is RoscaBase {
     }
 
     function test_bid_pastWinnerCannotBidAgain() public {
-        runRound(people[1], 40e18);
+        vm.prank(people[1]);
+        circle.bid(40e18);
+        endBidding();
+        circle.closeAuction();
+        approveBy(circle.quorumNeeded());
+        releaseTo(people[1]);
         payAll();
         vm.prank(people[1]);
         vm.expectRevert(abi.encodeWithSelector(RoscaCircle.NotEligible.selector, people[1]));
