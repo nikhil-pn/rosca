@@ -182,6 +182,7 @@ export const bid = act("bid", 300_000n);
 export const closeAuction = act("closeAuction", 1_500_000n);
 export const approve = act("approveRelease", 300_000n);
 export const withdraw = act("withdraw", 300_000n);
+export const dissolve = act("dissolve", 600_000n);
 
 /** Sign the exact payout bytes with ML-DSA-87, in the browser. */
 export async function signPayout(acc: UnifiedAccount, circle: Address, round: bigint, recipient: Address, deadline: bigint): Promise<Hex> {

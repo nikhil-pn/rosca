@@ -59,6 +59,7 @@ interface Snap {
   won: boolean[];
   needed: number;
   owed: bigint;
+  stalled: boolean;
 }
 let snap: Snap | null = null;
 let prev: Snap | null = null;
@@ -67,17 +68,18 @@ async function load(): Promise<Snap | null> {
   if (!acc) return null;
   const me = acc.evm as Address;
   const [qor, fusd, key] = await Promise.all([A.qorBalance(me), A.fusdBalance(me), A.pqcRegistered(acc).catch(() => false)]);
-  const s: Snap = { qor, fusd, key, phase: -1, members: [], round: 0, paid: [], approved: [], won: [], needed: 2, owed: 0n };
+  const s: Snap = { qor, fusd, key, phase: -1, members: [], round: 0, paid: [], approved: [], won: [], needed: 2, owed: 0n, stalled: false };
   const c = saved.current;
   if (!c) return s;
   s.circle = c;
-  const [members, phase, round, needed] = await Promise.all([
+  const [members, phase, round, needed, stalled] = await Promise.all([
     A.read<Address[]>(c, "members"),
     A.read<number>(c, "phase"),
     A.read<bigint>(c, "currentRound"),
     A.read<number>(c, "quorumNeeded"),
+    A.read<boolean>(c, "isStalled"),
   ]);
-  Object.assign(s, { members, phase, round: Number(round), needed });
+  Object.assign(s, { members, phase, round: Number(round), needed, stalled });
   s.won = await Promise.all(members.map((m) => A.read<boolean>(c, "hasWon", [m])));
   if (s.round >= 1) {
     const [r, r1, paid, approved] = await Promise.all([
@@ -122,8 +124,10 @@ function nextStep(s: Snap): Next {
     };
   if (s.phase === 0)
     return { key: `forming:${s.members.length}`, kicker: "Starting", title: `Waiting for friends to join · ${s.members.length} of 3`, body: "Ravi and Meera are joining. Each one needs a registered post-quantum key to get in.", actions: `<span class="spinner"></span>` };
+  if (s.stalled)
+    return { key: "stalled", kicker: "Circle stuck", title: "This circle can't go on", body: "A round ran out of time and nobody can finish it. Dissolve the circle and everyone gets back what they put in, minus what they already took out.", actions: `<button class="btn-primary" data-act="dissolve">Dissolve and refund</button>` };
   if (s.phase >= 2)
-    return { key: `withdraw:${s.owed}`, kicker: "Circle complete", title: `${usd(s.owed)} is waiting for you`, body: "Your security and your share of the discounts. Take it back to your wallet.", actions: `<button class="btn-primary" data-act="withdraw">Withdraw ${usd(s.owed)}</button>` };
+    return { key: `withdraw:${s.owed}`, kicker: s.phase === 3 ? "Circle dissolved" : "Circle complete", title: `${usd(s.owed)} is waiting for you`, body: "Your security and your share of the discounts. Take it back to your wallet.", actions: `<button class="btn-primary" data-act="withdraw">Withdraw ${usd(s.owed)}</button>` };
   if (!r) return { key: "wait", kicker: "", title: "Loading…", body: "", actions: "" };
   const winner = r.closed ? r.winner : null;
   const iWin = winner && i >= 0 && winner.toLowerCase() === s.members[i].toLowerCase();
@@ -481,6 +485,15 @@ const actions: Record<string, () => void> = {
       cta: "Confirm approval",
       run: (p) => withStep(p, "Approving", () => A.approve(acc!, saved.current!), (h) => txLink(h, "tx")),
       done: () => "Approved.",
+    }),
+  dissolve: () =>
+    confirmTx({
+      title: "Dissolve this circle",
+      lead: "The circle stops. The money left goes back to members in proportion to what each put in minus what each took out.",
+      rows: [windowRow("your circle"), feeRow],
+      cta: "Confirm and dissolve",
+      run: (p) => withStep(p, "Dissolving", () => A.dissolve(acc!, saved.current!), (h) => txLink(h, "tx")),
+      done: () => "Dissolved. Withdraw your refund next.",
     }),
   collect: () => collectFlow(),
   thief: () => thiefFlow(),
