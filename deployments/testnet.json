@@ -3,5 +3,12 @@
   "chainId": 9800,
   "fusd": "0x97143B771D34ddb9130b807b135Ae675A5a963CA",
   "factory": "0x366d6a029d94a98ba4d93e2eb4dbf07720387d39",
-  "factoryTx": "0xe4d460379e0c7f80a154e3e05dd248fd3250fedbe6e6501b202ef1bd856316f1"
+  "factoryTx": "0xe4d460379e0c7f80a154e3e05dd248fd3250fedbe6e6501b202ef1bd856316f1",
+  "circles": [
+    {
+      "address": "0xF8cA79Bf91513e476D12d5B5B3eE92ac3806D561",
+      "name": "Test run",
+      "tx": "0xae0ae49ac171609f8d29f64e16e3f09f72757e7f6303f09075754ff6d6c20635"
+    }
+  ]
 }
