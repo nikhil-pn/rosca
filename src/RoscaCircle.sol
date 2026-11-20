@@ -204,4 +204,35 @@ contract RoscaCircle {
     function quorumNeeded() public view returns (uint16) {
         return uint16((uint256(size) * quorumBps + 9999) / 10000);
     }
+
+    // ---------------------------------------------------------------- joining
+
+    event Joined(address indexed member, uint256 index);
+    event RoundStarted(uint256 indexed round, uint64 start, uint64 bidEnd);
+
+    /// @notice Join the circle. Only accounts with a registered ML-DSA-87 key (with proof of
+    /// possession) can join, because only they can sign a payout.
+    function join() external inPhase(Phase.Forming) {
+        if (isMember[msg.sender]) revert AlreadyMember(msg.sender);
+        if (_members.length >= size) revert CircleFull();
+        if (!PqcGate.hasUsableKey(msg.sender)) revert NeedsPqcKey(msg.sender);
+
+        isMember[msg.sender] = true;
+        _members.push(msg.sender);
+        emit Joined(msg.sender, _members.length - 1);
+
+        if (_members.length == size) {
+            phase = Phase.Running;
+            _startRound(1);
+        }
+    }
+
+    function _startRound(uint256 r) internal {
+        currentRound = r;
+        uint64 start = uint64(block.timestamp);
+        uint64 bidEnd = start + roundLength;
+        _rounds[r].start = start;
+        _rounds[r].bidEnd = bidEnd;
+        emit RoundStarted(r, start, bidEnd);
+    }
 }
