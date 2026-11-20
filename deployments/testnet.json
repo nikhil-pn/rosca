@@ -34,6 +34,15 @@
       "tx": "0x703be9e1d1178d89b97bab28c1ae29ce33377ddcfe8b7a5e72b589eae2d0f660",
       "status": "reverted",
       "at": "2026-11-20T15:06:57.213Z"
+    },
+    {
+      "circle": "0x0A0A0D7A765942Ef060fCcAdb51464785b3e6e16",
+      "round": 2,
+      "kind": "replayed",
+      "thief": "0xE63F03890055624C57AfB792c955ABc38554bc89",
+      "tx": "0xaa805d63dc90516156a09dde5eb6969dd7a955d7bfe741a72ca7a889ed3b4968",
+      "status": "reverted",
+      "at": "2026-11-20T17:18:39.086Z"
     }
   ]
 }
