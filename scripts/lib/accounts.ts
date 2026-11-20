@@ -8,7 +8,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync } from "n
 import { dirname } from "node:path";
 import { CONFIG } from "./config.ts";
 
-export type Role = "deployer" | `member-${number}`;
+export type Role = "deployer" | "faucet" | `member-${number}` | `bot-${number}`;
 
 interface SecretsFile {
   note: string;

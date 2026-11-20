@@ -146,3 +146,15 @@ export async function fundFusd(toEvm: string, amount: bigint): Promise<string> {
     f.tx.disconnect();
   }
 }
+
+/** Send fUSD as a bank coin (not ERC-20) from the funder to a native address. The try-it faucet
+ * keeps fUSD this way and converts it for each visitor with MsgConvertCoin. */
+export async function fundBankFusd(to: string, amount: bigint): Promise<string> {
+  const f = await funder();
+  try {
+    const res = await f.tx.bankSend(to, [{ denom: CONFIG.fusdDenom, amount: amount.toString() }]);
+    return res.transactionHash;
+  } finally {
+    f.tx.disconnect();
+  }
+}
