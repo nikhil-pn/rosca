@@ -57,6 +57,11 @@ async function snapshot(address) {
   return { info, rounds, memberList, paid: paidFlags.filter(Boolean).length, paidFlags };
 }
 
+function markLive() {
+  if (!has("device-note")) return;
+  $("device-note").textContent = `Live on QoreChain testnet · updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
+}
+
 async function refreshPhone() {
   if (!has("balance")) return;
   const c = state.list.find((x) => x.address === state.selected);
@@ -92,6 +97,7 @@ async function refreshPhone() {
       return t;
     }),
   );
+  markLive();
 }
 
 /** The newest circle drives the story: its step, countdown and feed. */
@@ -104,7 +110,7 @@ async function refreshStory() {
   story.highlightStep(story.stepOf(snap.info, round, snap.paid, quorum));
   story.renderHeader(snap.info, round);
   if (has("feed")) await renderFeed(state.list.slice(0, 4), state.attacks, quorum);
-  $("device-note").textContent = `Live on QoreChain testnet · updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
+  markLive();
 }
 
 async function loadCircles() {
