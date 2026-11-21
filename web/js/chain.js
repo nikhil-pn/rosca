@@ -1,16 +1,45 @@
 // A tiny read-only JSON-RPC client with just enough ABI decoding for Rosca's views.
 import { CONFIG } from "./config.js";
 
+// Calls made in the same moment (a page load reads ~20 values per circle) go out together as one
+// JSON-RPC batch, so a phone makes a handful of requests instead of hundreds and stays well under
+// the endpoint's rate limit.
 let id = 0;
-async function rpc(method, params) {
-  const res = await fetch(CONFIG.evmRpc, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", id: ++id, method, params }),
+let queue = [];
+const BATCH = 40;
+
+function rpc(method, params) {
+  return new Promise((resolve, reject) => {
+    queue.push({ body: { jsonrpc: "2.0", id: ++id, method, params }, resolve, reject });
+    if (queue.length === 1) setTimeout(flush, 0);
   });
-  const body = await res.json();
-  if (body.error) throw new Error(body.error.message);
-  return body.result;
+}
+
+function flush() {
+  const all = queue;
+  queue = [];
+  for (let i = 0; i < all.length; i += BATCH) send(all.slice(i, i + BATCH));
+}
+
+async function send(items) {
+  try {
+    const res = await fetch(CONFIG.evmRpc, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(items.map((it) => it.body)),
+    });
+    const replies = await res.json();
+    if (!Array.isArray(replies)) throw new Error(replies?.error?.message ?? `HTTP ${res.status}`);
+    const byId = new Map(replies.map((r) => [r.id, r]));
+    for (const it of items) {
+      const r = byId.get(it.body.id);
+      if (!r) it.reject(new Error("no reply"));
+      else if (r.error) it.reject(new Error(r.error.message));
+      else it.resolve(r.result);
+    }
+  } catch (e) {
+    for (const it of items) it.reject(e);
+  }
 }
 
 const SEL = {
