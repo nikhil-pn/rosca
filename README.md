@@ -1,5 +1,9 @@
 # Rosca
 
+[![Built on QoreChain](https://build.qorechain.io/badge/rosca.svg)](https://build.qorechain.io/p/rosca)
+
+![Rosca: the savings circle no one can run away with](media/cover.png)
+
 **The savings circle the organiser can't run away with.**
 
 > Built for QoreChain [Build Before Q-Day](https://build.qorechain.io), category **Post-Quantum dApp**.
