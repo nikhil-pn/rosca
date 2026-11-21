@@ -12,9 +12,8 @@ export interface Deployments {
   fusd: Address;
   factory?: Address;
   factoryTx?: string;
-  /** The first factory, before the audit fixes. Its circles stay live and readable. */
-  factoryV1?: Address;
-  factoryV1Tx?: string;
+  /** Earlier factories, oldest first. Their circles stay live and readable. */
+  olderFactories?: { address: Address; tx: string; note: string }[];
   circles?: { address: Address; name: string; tx: string }[];
   /** The circle the keeper is running now, and how many it has opened. */
   live?: { address: Address; count: number };

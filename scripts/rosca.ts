@@ -70,11 +70,16 @@ const commands: Record<string, (arg?: string) => Promise<void>> = {
     }
   },
 
-  async deploy() {
+  /** `deploy` opens the first factory. `deploy "<why>"` retires the current one (its circles keep
+   * working and stay listed in olderFactories) and opens a new one, e.g. after a contract fix. */
+  async deploy(arg) {
     const d = readDeployments();
-    if (d.factory) {
-      console.log(`RoscaFactory already at ${d.factory}`);
+    if (d.factory && !arg) {
+      console.log(`RoscaFactory already at ${d.factory}; pass a reason to open a new one`);
       return;
+    }
+    if (d.factory && d.factoryTx) {
+      d.olderFactories = [...(d.olderFactories ?? []), { address: d.factory, tx: d.factoryTx, note: arg! }];
     }
     const acc = await account("deployer");
     await ensureWindow(acc, []);
