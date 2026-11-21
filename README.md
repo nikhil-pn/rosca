@@ -85,8 +85,9 @@ reverts on chain. See [`docs/PROOF.md`](docs/PROOF.md).
 - [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md): who might attack, what stops each attack, and the risk that is left.
 - [`docs/PROOF.md`](docs/PROOF.md): every claim as a testnet transaction.
 - [`AI_USAGE.md`](AI_USAGE.md): how an AI coding agent built Rosca, what the humans did, and how the work was checked.
-- [`audit/`](audit/): the two-stage QCAI audit. Stage 1 (before fixes) scored 72/100 with 6 findings; each one is
-  assessed there with its fix. The audit covers the contract source, so it applies to any network the same code is
+- [`audit/`](audit/): the two-stage QCAI audit. Stage 1 (before fixes): 72/100, high risk, 6 findings, each fixed
+  or answered. Stage 2 (after fixes, QoreChain setting): **78/100, medium risk, rated quantum-safe**; every finding is
+  answered there with the code and test that already covers it. The audit covers the contract source, so it applies to any network the same code is
   deployed on.
 
 ## Kits used

@@ -103,7 +103,7 @@ The agent designed the contract around the attacks it expected and wrote a test 
 | A round stalls forever | After a grace period members dissolve the circle and get refunds | tests; the keeper dissolved two real stalled circles |
 | A stolen key drains the wallet through other contracts | Member windows are scoped to the circle and fUSD only, and only the post-quantum key can open a wider one | window scripts |
 
-The fest's two-stage QCAI audit is run on top of this review; its reports go in `audit/`.
+The fest's two-stage QCAI audit ran on top of this review (72/100 before fixes, 78/100 and "quantum-safe" after); the agent drove the dashboard, triaged every finding against the code and tests, and wrote the answers in `audit/`.
 
 ## 6. The AI as autonomous tester
 

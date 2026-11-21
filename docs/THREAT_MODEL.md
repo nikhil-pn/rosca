@@ -67,7 +67,7 @@ Honest limits, and what would reduce each one:
 | **Sybil members:** one person joins with many accounts. | The organiser shares the invite link only with people they know. | Optional identity checks for public circles. |
 | **Front-running a bid.** A bid is public in the mempool before it lands. | A higher bid only wins if it is a bigger discount, which costs the bidder. | Sealed bids. |
 | **The REST proxy or RPC censors transactions.** | The chain is public; users can send the same signed transactions through any endpoint. | A choice of endpoints in the app. |
-| **No independent audit yet.** | 67 tests, fuzz and invariant runs, an AI security review, and the fest's two-stage QCAI audit. | A professional audit before any mainnet use with real money. |
+| **No independent audit yet.** | 67 tests, fuzz and invariant runs, an AI security review, and the fest's two-stage QCAI audit (78/100 after fixes, rated quantum-safe). | A professional audit before any mainnet use with real money. |
 | **Legal:** chit funds in India must be registered with the state, and the organiser has duties under the Chit Funds Act. | Testnet only. | Legal advice and registration before any real-money launch in India. |
 
 ## 6. Out of scope
