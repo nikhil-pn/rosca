@@ -3,10 +3,16 @@
 The Post-Quantum dApp category asks for a two-stage audit with QoreChain's AI auditor (QCAIA): a report on the code
 as written, then a second report after the findings are fixed.
 
-| Stage | Date | Code | Score | Risk | Report |
-| --- | --- | --- | --- | --- | --- |
-| 1, before fixes | 21 Nov 2026 | `src/` flattened (`forge flatten src/RoscaFactory.sol`) | 72 / 100 | High | [`stage-1-qcai-report.pdf`](stage-1-qcai-report.pdf) |
-| 2, after fixes | next free daily audit | factory v3, `0x8197d7a6…ccbd2f` | — | — | — |
+| Stage | Date | Code | Auditor setting | Score | Risk | Quantum readiness | Report |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1, before fixes | 21 Nov 2026 | first factory, `src/` flattened | auto-detect (read as Ethereum) | 72 / 100 | High | not scored | [`stage-1-qcai-report.pdf`](stage-1-qcai-report.pdf) |
+| 2, after fixes | 22 Nov 2026 | factory v3, same command | auto-detect (read as Ethereum) | 72 / 100 | High | not scored | [`stage-2-qcai-report.pdf`](stage-2-qcai-report.pdf) |
+| **2, after fixes** | 22 Nov 2026 | factory v3, same code | **QoreChain (PQC)** | **78 / 100** | **Medium** | **Quantum-safe** | [`stage-2-qcai-report-qorechain.pdf`](stage-2-qcai-report-qorechain.pdf) |
+
+Every run pastes `forge flatten src/RoscaFactory.sol` into dashboard.qorechain.io → AI Audit on the testnet. The first
+two runs used the default "auto-detect" setting, which read the Solidity as Ethereum code and skipped the
+post-quantum checks. The third run, on the same code, chose QoreChain: the auditor then checks the ML-DSA-87 path
+and rates the contract quantum-safe. We list all three so the numbers can be compared fairly.
 
 ## Stage 1 findings and what we do about each
 
@@ -44,4 +50,15 @@ The audit fixes were first deployed as **factory v2**
 (tx [`0x38abe4b4…`](https://explore.qore.network/tx/0x38abe4b41a22d1254b4b60df24c458cea7affe81002ccda60884ae44978e1f4e)).
 Earlier factories stay live so circles opened on them can finish. The site and the app open new circles on v3.
 
-Stage 2 runs the fixed code through the auditor again. The dashboard gives one free audit a day, so it runs on the next one.
+## Stage 2 findings (QoreChain setting) and what we found
+
+| # | Finding (QCAI severity) | Our assessment |
+| --- | --- | --- |
+| 1 | ML-DSA-87 key registration bypass: check the algorithm id and key length (High) | Already enforced. `PqcGate.registeredKey` reverts unless the key is registered, `algorithmId == 1` (ML-DSA-87), the key is 2592 bytes and possession was proven. Tests: `test_join_refusesOtherAlgorithm`, `test_join_refusesKeyWithoutProofOfPossession`, `test_release_needsWinnersKeyStillRegistered`. |
+| 2 | Reentrancy in token transfers (Medium) | Same as stage 1, finding 1: `pay`, `release` and `withdraw` are `nonReentrant` and change state before the transfer. Tests with a re-entering token: `test_release_reentryDuringPayoutFails`, `test_withdraw_reentryDuringWithdrawFails`. |
+| 3 | Security deposits could be applied twice at auction close (Medium) | Cannot happen: a share is taken from security only for a past winner whose `paid` flag is false, and the flag is set in the same step. `invariant_moneyIsConserved` and `invariant_potCoversWhatItOwes` hold over 128,000 random actions. Test: `test_securityCoversAPastWinnerWhoStopsPaying`. |
+| 4 | Signature length not validated (Low) | Already enforced: `requireSignedBy` reverts with `BadSignatureLength` unless the signature is 4627 bytes, before the precompile is called. |
+| 5 | Precompile addresses are fixed (Info) | By design: `0x…0A01` and `0x…0A02` are part of QoreChain, like the EVM's own precompiles. |
+
+No stage 2 finding needed a code change; every point is covered by code and tests that were already in place. The
+stage 1 fixes, and the dissolve fix from our own second review, are what stage 2 audited.

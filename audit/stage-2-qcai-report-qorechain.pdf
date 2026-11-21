@@ -1,0 +1,677 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 8385
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 22 Tf
+25.2999999999999972 TL
+0.063 0.725 0.506 rg
+39.6850393700787407 785.1970866141732586 Td
+(QoreChain AI) Tj
+ET
+BT
+/F1 16 Tf
+18.3999999999999986 TL
+0.157 g
+39.6850393700787407 756.8506299212598378 Td
+(Security Audit Report) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.392 g
+39.6850393700787407 728.5041732283464171 Td
+(Generated: 11/22/2026, 12:30:29 AM) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.392 g
+39.6850393700787407 714.3309448818897636 Td
+(Contract Name: Rosca) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.392 g
+39.6850393700787407 700.15771653543311 Td
+(Blockchain: qorechain) Tj
+ET
+0.78 G
+39.6850393700787407 685.9844881889763428 m
+555.5905511811024553 685.9844881889763428 l
+S
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0. g
+39.6850393700787407 657.6380314960629221 Td
+(Audit Overview) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0. g
+39.6850393700787407 629.291574803149615 Td
+(Overall Security Score: 78/100) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0. g
+39.6850393700787407 615.1183464566928478 Td
+(Risk Level: MEDIUM) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0. g
+39.6850393700787407 600.9451181102361943 Td
+(Quantum Readiness: QUANTUM-SAFE) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0. g
+39.6850393700787407 586.7718897637794271 Td
+(Total Vulnerabilities: 5) Tj
+ET
+BT
+/F1 12 Tf
+13.7999999999999989 TL
+0. g
+39.6850393700787407 544.2522047244094665 Td
+(Executive Summary) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.235 g
+39.6850393700787407 515.9057480314959321 Td
+(This contract implements a quantum-safe savings circle \(ROSCA\) using ML-DSA-87 signatures for authentication. It) Tj
+T* (demonstrates good practices in quantum-resistant design with proper use of post-quantum cryptographic primitives.) Tj
+T* (However, several medium-severity issues were identified related to potential bypasses in key registration,) Tj
+T* (reentrancy risks in token interactions, and incomplete handling of security deposits during auction closure. The) Tj
+T* (contract also lacks some input validation consistency for PQC signatures and assumes fixed precompile addresses.) Tj
+ET
+0.78 G
+0.5670000000000001 w
+0.78 G
+0.5670000000000001 w
+0.06 0.73 0.51 rg
+0.78 G
+0. w
+0.06 0.73 0.51 rg
+40. 416.69314960629913 83.2931405964829992 -21.4999999999999964 re
+f
+BT
+/F2 10 Tf
+11.5 TL
+1. g
+45. 403.1931496062991869 Td
+(Vulnerability) Tj
+ET
+0.06 0.73 0.51 rg
+0.78 G
+0. w
+0.06 0.73 0.51 rg
+123.2931405964829992 416.69314960629913 48.6000000000000014 -21.4999999999999964 re
+f
+BT
+/F2 10 Tf
+11.5 TL
+1. g
+128.2931405964829992 403.1931496062991869 Td
+(Severity) Tj
+ET
+0.06 0.73 0.51 rg
+0.78 G
+0. w
+0.06 0.73 0.51 rg
+171.8931405964830219 416.69314960629913 107.0200000000000244 -21.4999999999999964 re
+f
+BT
+/F2 10 Tf
+11.5 TL
+1. g
+176.8931405964829935 403.1931496062991869 Td
+(Location) Tj
+ET
+0.06 0.73 0.51 rg
+0.78 G
+0. w
+0.06 0.73 0.51 rg
+278.9131405964830606 416.69314960629913 276.366859403573244 -21.4999999999999964 re
+f
+BT
+/F2 10 Tf
+11.5 TL
+1. g
+283.9131405964830606 403.1931496062991869 Td
+(Recommendation) Tj
+ET
+0.78 G
+0.5670000000000001 w
+0.96 g
+0.78 G
+0. w
+0.96 g
+40. 395.1931496062991869 83.2931405964829992 -51.3999999999999986 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+45. 382.5431496062992096 Td
+(Potential) Tj
+T* (ML-DSA-87 Key) Tj
+T* (Registration) Tj
+T* (Bypass) Tj
+ET
+0.96 g
+0.78 G
+0. w
+0.96 g
+123.2931405964829992 395.1931496062991869 48.6000000000000014 -51.3999999999999986 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+128.2931405964829992 382.5431496062992096 Td
+(HIGH) Tj
+ET
+0.96 g
+0.78 G
+0. w
+0.96 g
+171.8931405964830219 395.1931496062991869 107.0200000000000244 -51.3999999999999986 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+176.8931405964829935 382.5431496062992096 Td
+(src/libraries/PqcGate.sol) Tj
+ET
+0.96 g
+0.78 G
+0. w
+0.96 g
+278.9131405964830606 395.1931496062991869 276.366859403573244 -51.3999999999999986 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+283.9131405964830606 382.5431496062992096 Td
+(Add explicit checks to ensure that the algorithm ID returned by the) Tj
+T* (precompile is exactly 1 \(ML-DSA-87\) and validate that the public) Tj
+T* (key length matches the expected ML-DSA-87 size.) Tj
+ET
+1. g
+0.78 G
+0. w
+1. g
+40. 343.7931496062992096 83.2931405964829992 -41.0499999999999972 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+45. 331.1431496062992892 Td
+(Reentrancy Risk) Tj
+T* (in Token Transfers) Tj
+ET
+1. g
+0.78 G
+0. w
+1. g
+123.2931405964829992 343.7931496062992096 48.6000000000000014 -41.0499999999999972 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+128.2931405964829992 331.1431496062992892 Td
+(MEDIUM) Tj
+ET
+1. g
+0.78 G
+0. w
+1. g
+171.8931405964830219 343.7931496062992096 107.0200000000000244 -41.0499999999999972 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+176.8931405964829935 331.1431496062992892 Td
+(src/RoscaCircle.sol) Tj
+ET
+1. g
+0.78 G
+0. w
+1. g
+278.9131405964830606 343.7931496062992096 276.366859403573244 -41.0499999999999972 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+283.9131405964830606 331.1431496062992892 Td
+(Ensure that all external calls to token contracts are made after) Tj
+T* (state changes are complete and consider using the) Tj
+T* (Checks-Effects-Interactions pattern more strictly.) Tj
+ET
+0.96 g
+0.78 G
+0. w
+0.96 g
+40. 302.7431496062991982 83.2931405964829992 -51.3999999999999986 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+45. 290.093149606299221 Td
+(Incomplete) Tj
+T* (Security Handling) Tj
+T* (During Auction) Tj
+T* (Closure) Tj
+ET
+0.96 g
+0.78 G
+0. w
+0.96 g
+123.2931405964829992 302.7431496062991982 48.6000000000000014 -51.3999999999999986 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+128.2931405964829992 290.093149606299221 Td
+(MEDIUM) Tj
+ET
+0.96 g
+0.78 G
+0. w
+0.96 g
+171.8931405964830219 302.7431496062991982 107.0200000000000244 -51.3999999999999986 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+176.8931405964829935 290.093149606299221 Td
+(src/RoscaCircle.sol) Tj
+ET
+0.96 g
+0.78 G
+0. w
+0.96 g
+278.9131405964830606 302.7431496062991982 276.366859403573244 -51.3999999999999986 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+283.9131405964830606 290.093149606299221 Td
+(Implement a more robust mechanism for applying security) Tj
+T* (deposits, ensuring that each deposit is applied correctly and that no) Tj
+T* (double-counting occurs.) Tj
+ET
+1. g
+0.78 G
+0. w
+1. g
+40. 251.3431496062991357 83.2931405964829992 -41.0499999999999972 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+45. 238.6931496062992437 Td
+(Missing Input) Tj
+T* (Validation for PQC) Tj
+T* (Signature Length) Tj
+ET
+1. g
+0.78 G
+0. w
+1. g
+123.2931405964829992 251.3431496062991357 48.6000000000000014 -41.0499999999999972 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+128.2931405964829992 238.6931496062992437 Td
+(LOW) Tj
+ET
+1. g
+0.78 G
+0. w
+1. g
+171.8931405964830219 251.3431496062991357 107.0200000000000244 -41.0499999999999972 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+176.8931405964829935 238.6931496062992437 Td
+(src/RoscaCircle.sol) Tj
+ET
+1. g
+0.78 G
+0. w
+1. g
+278.9131405964830606 251.3431496062991357 276.366859403573244 -41.0499999999999972 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+283.9131405964830606 238.6931496062992437 Td
+(Add consistent signature length validation across all functions that) Tj
+T* (process PQC signatures.) Tj
+ET
+0.96 g
+0.78 G
+0. w
+0.96 g
+40. 210.2931496062991243 83.2931405964829992 -41.0499999999999972 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+45. 197.6431496062991755 Td
+(Precompile) Tj
+T* (Address) Tj
+T* (Assumption) Tj
+ET
+0.96 g
+0.78 G
+0. w
+0.96 g
+123.2931405964829992 210.2931496062991243 48.6000000000000014 -41.0499999999999972 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+128.2931405964829992 197.6431496062991755 Td
+(INFO) Tj
+ET
+0.96 g
+0.78 G
+0. w
+0.96 g
+171.8931405964830219 210.2931496062991243 107.0200000000000244 -41.0499999999999972 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+176.8931405964829935 197.6431496062991755 Td
+(src/libraries/PqcGate.sol) Tj
+ET
+0.96 g
+0.78 G
+0. w
+0.96 g
+278.9131405964830606 210.2931496062991243 276.366859403573244 -41.0499999999999972 re
+f
+BT
+/F1 9 Tf
+10.3499999999999996 TL
+0.314 g
+283.9131405964830606 197.6431496062991755 Td
+(Make precompile addresses configurable via constructor) Tj
+T* (parameters or environment variables to support different networks.) Tj
+ET
+0.78 G
+0.5670000000000001 w
+0.78 G
+0. w
+0.78 G
+0.5670000000000001 w
+0.78 G
+0.5670000000000001 w
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.588 g
+227.5977952755905562 19.8427559055116944 Td
+(Page 1 of 1 - Powered by QoreChain AI) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R ]
+/Count 1
+>>
+endobj
+5 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+6 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+7 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+8 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+9 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+10 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 5 0 R
+/F2 6 0 R
+/F3 7 0 R
+/F4 8 0 R
+/F5 9 0 R
+/F6 10 0 R
+/F7 11 0 R
+/F8 12 0 R
+/F9 13 0 R
+/F10 14 0 R
+/F11 15 0 R
+/F12 16 0 R
+/F13 17 0 R
+/F14 18 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+19 0 obj
+<<
+/Producer (jsPDF 4.0.0)
+/CreationDate (D:20261122003029+05'30')
+>>
+endobj
+20 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 21
+0000000000 65535 f 
+0000008589 00000 n 
+0000010406 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000008646 00000 n 
+0000008771 00000 n 
+0000008901 00000 n 
+0000009034 00000 n 
+0000009171 00000 n 
+0000009294 00000 n 
+0000009423 00000 n 
+0000009555 00000 n 
+0000009691 00000 n 
+0000009819 00000 n 
+0000009946 00000 n 
+0000010075 00000 n 
+0000010208 00000 n 
+0000010310 00000 n 
+0000010654 00000 n 
+0000010740 00000 n 
+trailer
+<<
+/Size 21
+/Root 20 0 R
+/Info 19 0 R
+/ID [ <5683F9F4DC731CFD9480CC9073C6A80A> <5683F9F4DC731CFD9480CC9073C6A80A> ]
+>>
+startxref
+10844
+%%EOF
