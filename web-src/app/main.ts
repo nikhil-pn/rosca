@@ -175,7 +175,7 @@ function nextStep(s: Snap): Next {
   if (s.stalled)
     return { key: "stalled", kicker: "Circle stuck", title: "This circle can't go on", body: "A round ran out of time and nobody can finish it. Dissolve the circle and everyone gets back what they put in, minus what they already took out.", actions: `<button class="btn-primary" data-act="dissolve">Dissolve and refund</button>` };
   if (s.phase >= 2)
-    return { key: `withdraw:${s.owed}`, kicker: s.phase === 3 ? "Circle dissolved" : "Circle complete", title: `${usd(s.owed)} is waiting for you`, body: "Your security and your share of the discounts. Take it back to your wallet.", actions: `<button class="btn-primary" data-act="withdraw">Withdraw ${usd(s.owed)}</button>` };
+    return { key: `withdraw:${s.owed}`, kicker: s.phase === 3 ? "Circle dissolved" : "Circle complete", title: `${usd(s.owed)} is waiting for you`, body: s.phase === 3 ? "Your refund and your share of the discounts. Take it back to your wallet." : "Your security and your share of the discounts. Take it back to your wallet.", actions: `<button class="btn-primary" data-act="withdraw">Withdraw ${usd(s.owed)}</button>` };
   if (!r) return { key: "wait", kicker: "", title: "Loading…", body: "", actions: "" };
   const winner = r.closed ? r.winner : null;
   const iWin = winner && i >= 0 && winner.toLowerCase() === s.members[i].toLowerCase();
@@ -1063,7 +1063,7 @@ function proofInto(sh: Sheet, back?: () => void) {
     <div><dt>Factory</dt><dd>${a(`${NET.explorer}/address/${NET.factory}`, short(NET.factory))}</dd></div>
     ${saved.current ? `<div><dt>Your circle</dt><dd>${a(`${NET.explorer}/address/${saved.current}`, short(saved.current))}</dd></div>` : ""}
     <div><dt>pqcVerify check</dt><dd>${a("https://github.com/nikhil-pn/rosca/blob/main/src/libraries/PqcGate.sol", "PqcGate.sol")}</dd></div>
-    <div><dt>Tests</dt><dd>${a("https://github.com/nikhil-pn/rosca/tree/main/test", "65 Foundry tests")}</dd></div>
+    <div><dt>Tests</dt><dd>${a("https://github.com/nikhil-pn/rosca/tree/main/test", "67 Foundry tests")}</dd></div>
     <div><dt>Live circle</dt><dd>${a(`${SITE}/live`, "rosca.exprmnts.fun/live")}</dd></div>
     <div><dt>Every claim</dt><dd>${a(`${SITE}/proof`, "rosca.exprmnts.fun/proof")}</dd></div>
     </dl></div>`, back);
