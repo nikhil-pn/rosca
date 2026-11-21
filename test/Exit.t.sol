@@ -136,6 +136,52 @@ contract ExitTest is RoscaBase {
         assertLe(fusd.balanceOf(address(circle)), SIZE, "at most rounding dust stays");
     }
 
+    /// A winner takes a pot, then the circle stalls before they have paid their later shares.
+    /// The security held from their payout goes to the members who paid in and never took a pot.
+    function test_dissolve_heldSecurityGoesToMembersNotYetPaid() public {
+        runRound(address(0), 0); // people[0] wins 500 at no discount: 250 paid out, 250 held
+        address winner = people[0];
+        uint256 held = circle.security(winner);
+        assertEq(held, 250e18);
+        vm.warp(circle.getRound(2).bidEnd + GRACE + 1);
+        vm.prank(people[2]);
+        circle.dissolve();
+
+        assertEq(circle.refundPool(), held, "security joins the refund pool");
+        assertEq(circle.totalSecurity(), 0);
+        assertEq(circle.security(winner), 0);
+        assertEq(circle.withdrawable(winner), 0, "the winner took 250 for 100 paid in; nothing more");
+        for (uint256 i = 1; i < people.length; ++i) {
+            uint256 refund = circle.refundShare(people[i]);
+            assertEq(refund, held / 4, "the four members who never took a pot share it equally");
+            uint256 before = fusd.balanceOf(people[i]);
+            vm.prank(people[i]);
+            circle.withdraw();
+            assertEq(fusd.balanceOf(people[i]), before + refund);
+        }
+        vm.prank(winner);
+        vm.expectRevert(RoscaCircle.NothingToWithdraw.selector);
+        circle.withdraw();
+        assertEq(fusd.balanceOf(address(circle)), 0);
+    }
+
+    /// Two winners kept paying, then the circle stalls. Their security is shared by the three
+    /// members still waiting for a pot.
+    function test_dissolve_winnersDoNotGetSecurityBack() public {
+        runRound(address(0), 0);
+        runRound(address(0), 0);
+        vm.warp(circle.getRound(3).bidEnd + GRACE + 1);
+        vm.prank(people[4]);
+        circle.dissolve();
+        for (uint256 i; i < 2; ++i) {
+            assertEq(circle.withdrawable(people[i]), 0, "winners already took more than they paid");
+        }
+        uint256 refund = circle.refundShare(people[2]);
+        assertEq(refund, circle.refundShare(people[3]));
+        assertEq(refund, circle.refundShare(people[4]));
+        assertApproxEqAbs(refund * 3, circle.refundPool(), 2);
+    }
+
     function test_dissolve_nonMemberReverts() public {
         vm.warp(circle.getRound(1).bidEnd + GRACE + 1);
         vm.prank(organiser);
