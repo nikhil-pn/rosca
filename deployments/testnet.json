@@ -32,11 +32,21 @@
       "address": "0x45977b51e66D51bc17e7e0F301997F80a6A000B8",
       "name": "Family chit #5",
       "tx": "0x9e8c5c8f44bc724aa8f2542f1b07282633358f5731f298224f7538511e641c4b"
+    },
+    {
+      "address": "0x43606E1865Ad3AD480c3D22c44B00566Db5682C7",
+      "name": "Friends kameti #6",
+      "tx": "0x8068780d6a76d7d09019bef37aecc3c2c161abac48ce65841acd7b48f6730b21"
+    },
+    {
+      "address": "0x5B807313C6A12C044F5680f93eF6804f22Fc0987",
+      "name": "Office kuri #7",
+      "tx": "0x8a22d67f1612470916c9fc81d57cad4deab5a47621ed6d3f58b49efe44bac99a"
     }
   ],
   "live": {
-    "address": "0x45977b51e66D51bc17e7e0F301997F80a6A000B8",
-    "count": 5
+    "address": "0x5B807313C6A12C044F5680f93eF6804f22Fc0987",
+    "count": 7
   },
   "attacks": [
     {
@@ -83,6 +93,15 @@
       "tx": "0x4b1b7ce212adfaff6b2976907df42f00e2c30ad9afa6a7742091677e320bd1f0",
       "status": "reverted",
       "at": "2026-11-21T08:46:29.457Z"
+    },
+    {
+      "circle": "0x43606E1865Ad3AD480c3D22c44B00566Db5682C7",
+      "round": 2,
+      "kind": "replayed",
+      "thief": "0xF164f0f86aA014A45877e7282759b563AB56533A",
+      "tx": "0xdfe5e2ba64d8301aed1b3a9a10c5c0186093805a1e0bf0d137a3db3511d61d3e",
+      "status": "reverted",
+      "at": "2026-11-21T13:55:54.454Z"
     }
   ],
   "olderFactories": [
