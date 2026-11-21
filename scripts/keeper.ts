@@ -208,8 +208,8 @@ const scanned = new Map<string, number>(); // factory -> circles already looked 
 
 async function discover(): Promise<void> {
   const d = readDeployments();
-  // Visitors' circles can live on either factory: the first one, or v2 with the audit fixes.
-  for (const factory of [d.factoryV1, d.factory].filter(Boolean) as Address[]) {
+  // Visitors' circles can live on any factory: the current one or an earlier one.
+  for (const factory of [...(d.olderFactories ?? []).map((f) => f.address), d.factory].filter(Boolean) as Address[]) {
     await discoverOn(factory);
   }
 }
