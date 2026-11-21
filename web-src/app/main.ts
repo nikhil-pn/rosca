@@ -1066,6 +1066,7 @@ function proofInto(sh: Sheet, back?: () => void) {
     ${saved.current ? `<div><dt>Your circle</dt><dd>${a(`${NET.explorer}/address/${saved.current}`, short(saved.current))}</dd></div>` : ""}
     <div><dt>pqcVerify check</dt><dd>${a("https://github.com/nikhil-pn/rosca/blob/main/src/libraries/PqcGate.sol", "PqcGate.sol")}</dd></div>
     <div><dt>Tests</dt><dd>${a("https://github.com/nikhil-pn/rosca/tree/main/test", "67 Foundry tests")}</dd></div>
+    <div><dt>QCAI audit</dt><dd>${a("https://github.com/nikhil-pn/rosca/tree/main/audit", "78/100, quantum-safe")}</dd></div>
     <div><dt>Live circle</dt><dd>${a(`${SITE}/live`, "rosca.exprmnts.fun/live")}</dd></div>
     <div><dt>Every claim</dt><dd>${a(`${SITE}/proof`, "rosca.exprmnts.fun/proof")}</dd></div>
     </dl></div>`, back);
