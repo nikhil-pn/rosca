@@ -85,6 +85,7 @@ export async function renderFeed(circles, attacks, quorum, target = "feed", limi
   withTime.sort((a, b) => b.ts - a.ts);
 
   const ul = document.getElementById(target);
+  if (!ul) return; // the list was removed while the chain was being read (e.g. the user changed tab)
   if (!withTime.length) {
     ul.innerHTML = '<li class="empty">No transactions in the last few hours yet.</li>';
     return;
