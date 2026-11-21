@@ -32,6 +32,8 @@ body {
   -webkit-font-smoothing: antialiased;
   font-feature-settings: "tnum" 1, "cv11" 1;
   letter-spacing: -0.01em;
+  /* Decorative glows may extend past the edge; the page itself never scrolls sideways. */
+  overflow-x: clip;
 }
 a { color: inherit; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
