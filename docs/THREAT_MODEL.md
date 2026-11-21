@@ -37,6 +37,7 @@ Every "stopped by" points to the code or to a test in `test/` you can run with `
 | T8 | Someone wins twice, or a winner bids again | `hasWon` is set at close; past winners can't bid or be picked | `test_bid_pastWinnerCannotBidAgain`, `invariant_winnersNeverExceedRounds` |
 | T9 | A bidder takes an unfair discount | The discount is capped by the circle (at most 40%, the legal Indian limit); the organiser fee at most 5% and only from discounts | `test_bid_capIsFortyPercentAtMost`, `testFuzz_bidAboveCapAlwaysReverts`, `test_params_rejectFeeAboveFivePercent` |
 | T10 | A round stalls forever (members vanish, nobody can win) | After a grace period any member can dissolve; what's left is refunded in proportion to what each put in minus what each took out | `test_dissolve_onlyAfterStall`, `test_dissolve_refundsWhatEachPutIn`, `test_dissolve_afterSomeRoundsIsFair` |
+| T17 | Winners keep their held security when a circle dissolves, so members who never won lose out | The security covers shares the winners still owe; on dissolve it joins the refund pool instead of going back to the winners | `test_dissolve_heldSecurityGoesToMembersNotYetPaid`, `test_dissolve_winnersDoNotGetSecurityBack` |
 | T11 | Money is created or lost by some sequence of actions | Accounting checked across 128,000 random actions | `invariant_moneyIsConserved`, `invariant_potCoversWhatItOwes`, `test_fullCircle_moneyIsConserved` |
 | T12 | Reentrancy through the token | `nonReentrant` on every function that moves money; checks before transfers | contract |
 | T13 | Someone withdraws another member's money | `withdraw` only ever pays the caller | `test_withdraw_dividendGoesToCallerOnly` |
@@ -66,7 +67,7 @@ Honest limits, and what would reduce each one:
 | **Sybil members:** one person joins with many accounts. | The organiser shares the invite link only with people they know. | Optional identity checks for public circles. |
 | **Front-running a bid.** A bid is public in the mempool before it lands. | A higher bid only wins if it is a bigger discount, which costs the bidder. | Sealed bids. |
 | **The REST proxy or RPC censors transactions.** | The chain is public; users can send the same signed transactions through any endpoint. | A choice of endpoints in the app. |
-| **No independent audit yet.** | 65 tests, fuzz and invariant runs, an AI security review, and the fest's two-stage QCAI audit. | A professional audit before any mainnet use with real money. |
+| **No independent audit yet.** | 67 tests, fuzz and invariant runs, an AI security review, and the fest's two-stage QCAI audit. | A professional audit before any mainnet use with real money. |
 | **Legal:** chit funds in India must be registered with the state, and the organiser has duties under the Chit Funds Act. | Testnet only. | Legal advice and registration before any real-money launch in India. |
 
 ## 6. Out of scope
