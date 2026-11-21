@@ -279,7 +279,7 @@ export async function circleInfo(c: Address): Promise<CircleInfo> {
 export async function isRoscaCircle(c: string): Promise<boolean> {
   if (!/^0x[0-9a-fA-F]{40}$/.test(c)) return false;
   const lists = await Promise.all(
-    [NET.factory, NET.factoryV1].map((f) => pub.readContract({ address: f, abi: factoryAbi as Abi, functionName: "circles" }) as Promise<Address[]>),
+    [NET.factory, ...NET.olderFactories].map((f) => pub.readContract({ address: f, abi: factoryAbi as Abi, functionName: "circles" }) as Promise<Address[]>),
   );
   return lists.flat().some((a) => a.toLowerCase() === c.toLowerCase());
 }

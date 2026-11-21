@@ -15,10 +15,10 @@ export const NET = {
   evmChainId: 9800,
   evmRpc: "https://evm-testnet.qore.host",
   explorer: "https://explore.qore.network",
-  /** Factory v2, with the audit fixes. New circles open here. */
-  factory: "0x29053772f08c30c682e0fbb5db3a3d86ac84afef" as const,
-  /** The first factory; its circles can still be joined and played. */
-  factoryV1: "0x366d6a029d94a98ba4d93e2eb4dbf07720387d39" as const,
+  /** The current factory. New circles open here. */
+  factory: "0x8197d7a6345b0b087976e5412629514719ccbd2f" as const,
+  /** Earlier factories (v1, then v2 with the audit fixes); their circles can still be joined and played. */
+  olderFactories: ["0x366d6a029d94a98ba4d93e2eb4dbf07720387d39", "0x29053772f08c30c682e0fbb5db3a3d86ac84afef"] as const,
   fusd: "0x97143B771D34ddb9130b807b135Ae675A5a963CA" as const,
   fusdDecimals: 6,
   fusdDenom: "erc20:0x97143B771D34ddb9130b807b135Ae675A5a963CA",
