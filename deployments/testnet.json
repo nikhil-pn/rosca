@@ -102,6 +102,15 @@
       "tx": "0xdfe5e2ba64d8301aed1b3a9a10c5c0186093805a1e0bf0d137a3db3511d61d3e",
       "status": "reverted",
       "at": "2026-11-21T13:55:54.454Z"
+    },
+    {
+      "circle": "0x5B807313C6A12C044F5680f93eF6804f22Fc0987",
+      "round": 2,
+      "kind": "forged",
+      "thief": "0x17059EEE9cf98EE9C791ae3Bc0592D711Ed1a4e2",
+      "tx": "0x35283b854bc49df29ab6540457e513e393459ea4f8b1e8ed0b40345bce2b46bc",
+      "status": "reverted",
+      "at": "2026-11-21T19:04:28.239Z"
     }
   ],
   "olderFactories": [
