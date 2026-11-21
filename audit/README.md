@@ -6,7 +6,7 @@ as written, then a second report after the findings are fixed.
 | Stage | Date | Code | Score | Risk | Report |
 | --- | --- | --- | --- | --- | --- |
 | 1, before fixes | 21 Nov 2026 | `src/` flattened (`forge flatten src/RoscaFactory.sol`) | 72 / 100 | High | [`stage-1-qcai-report.pdf`](stage-1-qcai-report.pdf) |
-| 2, after fixes | next free daily audit | factory v2, `0x29053772…afef` | — | — | — |
+| 2, after fixes | next free daily audit | factory v3, `0x8197d7a6…ccbd2f` | — | — | — |
 
 ## Stage 1 findings and what we do about each
 
@@ -27,9 +27,21 @@ as written, then a second report after the findings are fixed.
   `test_release_reentryDuringPayoutFails`, `test_withdraw_reentryDuringWithdrawFails` (mock `test/mocks/ReentrantToken.sol`).
 - **Findings 3, 5, 6:** documented in the code (`quotePayout`, `closeAuction`) and in `docs/THREAT_MODEL.md`.
 
-All 65 tests pass. The fixed contracts are deployed as **factory v2**
+## Found in our own second review (21 Nov 2026)
+
+- **Dissolve gave held security back to winners.** Security is held from a winner's payout to cover the shares they
+  still owe. When a stalled circle was dissolved, that security went back to the winner, so members who had paid in
+  and never taken a pot lost money while the winners kept the whole pot. Now the security joins the refund pool and
+  is shared by what each member put in minus what each took out. Tests: `test_dissolve_heldSecurityGoesToMembersNotYetPaid`,
+  `test_dissolve_winnersDoNotGetSecurityBack` (both fail on the old code).
+
+All 67 tests pass. The fixed contracts are deployed as **factory v3**
+[`0x8197d7a6345b0b087976e5412629514719ccbd2f`](https://explore.qore.network/address/0x8197d7a6345b0b087976e5412629514719ccbd2f)
+(tx [`0x8001ccb6…`](https://explore.qore.network/tx/0x8001ccb6b4378b9011748b8bbe34ceaf4a08a4061c518b1a50767d01c5ac1c69)).
+
+The audit fixes were first deployed as **factory v2**
 [`0x29053772f08c30c682e0fbb5db3a3d86ac84afef`](https://explore.qore.network/address/0x29053772f08c30c682e0fbb5db3a3d86ac84afef)
 (tx [`0x38abe4b4…`](https://explore.qore.network/tx/0x38abe4b41a22d1254b4b60df24c458cea7affe81002ccda60884ae44978e1f4e)).
-The first factory stays live so circles opened on it can finish. The site and the app open new circles on v2.
+Earlier factories stay live so circles opened on them can finish. The site and the app open new circles on v3.
 
 Stage 2 runs the fixed code through the auditor again. The dashboard gives one free audit a day, so it runs on the next one.
