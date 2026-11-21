@@ -475,11 +475,11 @@ contract RoscaCircle {
         return (refundPool * netContribution(m)) / refundBase;
     }
 
-    /// @notice What `m` can withdraw now: dividends, plus security once the circle has ended,
+    /// @notice What `m` can withdraw now: dividends, plus security once the circle has completed,
     /// plus a refund share if it was dissolved.
     function withdrawable(address m) public view returns (uint256 amount) {
         amount = claimable[m];
-        if (phase == Phase.Completed || phase == Phase.Dissolved) amount += security[m];
+        if (phase == Phase.Completed) amount += security[m];
         amount += refundShare(m);
     }
 
@@ -490,7 +490,7 @@ contract RoscaCircle {
             claimable[msg.sender] = 0;
             totalClaimable -= amount;
         }
-        if (phase == Phase.Completed || phase == Phase.Dissolved) {
+        if (phase == Phase.Completed) {
             uint256 sec = security[msg.sender];
             if (sec != 0) {
                 security[msg.sender] = 0;
@@ -509,17 +509,22 @@ contract RoscaCircle {
     }
 
     /// @notice Dissolve a stalled circle. Any member can call it once the round has stalled for
-    /// the grace period. The money that is left goes back to members in proportion to what each
-    /// put in minus what each took out.
+    /// the grace period. Everything left except dividends already earned goes back to members in
+    /// proportion to what each put in minus what each took out.
+    /// Security held back from past winners joins that pool. It was held to cover the shares the
+    /// winners still owed; those rounds will never happen, so it goes to the members who paid in
+    /// and have not taken a pot, not back to the winners.
     function dissolve() external onlyMember inPhase(Phase.Running) {
         if (!isStalled()) revert NotStalled();
         uint256 balance = token.balanceOf(address(this));
-        uint256 owed = totalClaimable + totalSecurity;
-        refundPool = balance > owed ? balance - owed : 0;
+        refundPool = balance > totalClaimable ? balance - totalClaimable : 0;
+        totalSecurity = 0;
         uint256 base;
         uint256 n = _members.length;
         for (uint256 i; i < n; ++i) {
-            base += netContribution(_members[i]);
+            address m = _members[i];
+            security[m] = 0;
+            base += netContribution(m);
         }
         refundBase = base;
         phase = Phase.Dissolved;
