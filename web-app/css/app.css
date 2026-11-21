@@ -301,3 +301,10 @@ textarea.field { height: auto; padding: 14px 16px; line-height: 1.5; resize: non
 .phrase code { font-size: 15px; line-height: 1.7; background: none; padding: 0; word-spacing: 4px; }
 .create h2 { margin-bottom: 0; }
 #m-invite { margin-top: 14px; }
+
+/* Demo mode lives in the profile sheet, once: a single card above the menu. */
+.pf-mode { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; margin-bottom: 14px; border-radius: 20px; text-align: left; }
+.pf-mode .txt { display: grid; gap: 2px; min-width: 0; }
+.pf-mode b { font-size: 15px; font-weight: 600; color: var(--ink); }
+.pf-mode .txt span { font-size: 13px; color: var(--muted); }
+.pf-mode i { margin-left: auto; font-style: normal; color: var(--muted); }

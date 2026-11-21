@@ -962,12 +962,14 @@ function profileSheet() {
       <div class="profile">
         <div class="pf-head"><span class="pav me big">You</span><div><h2>Your test wallet</h2>${acc ? `<button class="addr" data-copy="${acc.evm}">${short(acc.evm)} <span>copy</span></button>` : "<p class=muted>No wallet yet</p>"}</div></div>
         ${acc && s ? `<div class="pf-stats"><div class="glass"><span>Test dollars</span><b>${money(s.fusd)}</b></div><div class="glass"><span>For fees</span><b>${(Number(s.qor) / 1e18).toFixed(2)} QOR</b></div><div class="glass"><span>Post-quantum key</span><b>${s.key ? "Registered ✓" : "Not yet"}</b></div></div>` : ""}
+        ${DEMO
+          ? '<button class="pf-mode glass" data-p="to-live"><span class="mi">◉</span><span class="txt"><b>You\'re in demo mode</b><span>Bots and free test money. Tap to go back to live mode.</span></span><i>›</i></button>'
+          : '<button class="pf-mode glass" data-p="to-demo"><span class="mi">◌</span><span class="txt"><b>Try demo mode</b><span>Free test money and two bot friends. Play a full round in minutes.</span></span><i>›</i></button>'}
         <nav class="menu glass">
           <button data-p="how"><span class="mi">◎</span>How it works<i>›</i></button>
           <button data-p="security"><span class="mi">⛨</span>Who can move the pot<i>›</i></button>
           <button data-p="keys"><span class="mi">⚿</span>Your keys<i>›</i></button>
           ${!DEMO && acc ? '<button data-p="fund"><span class="mi">＋</span>Add test money<i>›</i></button><button data-p="phrase"><span class="mi">✎</span>Recovery phrase<i>›</i></button>' : ""}
-          ${DEMO ? '<button data-p="to-live"><span class="mi">◉</span>Switch to live mode<i>›</i></button>' : '<button data-p="to-demo"><span class="mi">◌</span>Switch to demo mode<i>›</i></button>'}
           <button data-p="proof"><span class="mi">✓</span>Proof on chain<i>›</i></button>
           <a href="${SITE}/live" target="_blank" rel="noopener"><span class="mi">●</span>Watch the live circle<i>↗</i></a>
           <button data-p="install"><span class="mi">⇩</span>Add Rosca to your home screen<i>›</i></button>
@@ -1107,11 +1109,6 @@ document.addEventListener("click", (e) => {
   }
 });
 $("profile-btn").addEventListener("click", () => profileSheet());
-for (const b of document.querySelectorAll<HTMLButtonElement>("#mode-seg [data-mode]")) {
-  const on = (b.dataset.mode === "demo") === DEMO;
-  b.setAttribute("aria-checked", String(on));
-  b.addEventListener("click", () => !on && switchMode(b.dataset.mode as Mode));
-}
 $("circle-pill").addEventListener("click", () => (acc ? circlesSheet() : setupFlow()));
 $("dock-plus").addEventListener("click", () => (acc ? startFlow() : setupFlow()));
 
