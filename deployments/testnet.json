@@ -17,11 +17,26 @@
       "address": "0x0A0A0D7A765942Ef060fCcAdb51464785b3e6e16",
       "name": "Family chit #2",
       "tx": "0xe9b0680cd1085f56d1c19109f0f739a36343b1c689e7c3eecf110a80a4ffb498"
+    },
+    {
+      "address": "0xC275a7221740fF68333C8d38199EB084b15e0494",
+      "name": "Friends kameti #3",
+      "tx": "0xec06c23cb49c17a436fa68d780f8dd3e0946dd66921271689b50b8d6cbd57b9f"
+    },
+    {
+      "address": "0xDe9B384411e882897E5D594fd1c98f8D1eB88dAF",
+      "name": "Office kuri #4",
+      "tx": "0xc075d473f6840d65fbe80d8935235e05bd3ebf7ca728b6ee3866854538079006"
+    },
+    {
+      "address": "0x45977b51e66D51bc17e7e0F301997F80a6A000B8",
+      "name": "Family chit #5",
+      "tx": "0x9e8c5c8f44bc724aa8f2542f1b07282633358f5731f298224f7538511e641c4b"
     }
   ],
   "live": {
-    "address": "0x0A0A0D7A765942Ef060fCcAdb51464785b3e6e16",
-    "count": 2
+    "address": "0x45977b51e66D51bc17e7e0F301997F80a6A000B8",
+    "count": 5
   },
   "attacks": [
     {
@@ -41,6 +56,33 @@
       "tx": "0xaa805d63dc90516156a09dde5eb6969dd7a955d7bfe741a72ca7a889ed3b4968",
       "status": "reverted",
       "at": "2026-11-20T17:18:39.086Z"
+    },
+    {
+      "circle": "0xC275a7221740fF68333C8d38199EB084b15e0494",
+      "round": 2,
+      "kind": "forged",
+      "thief": "0xdE561D29769456b37B73f760976A54FA361F7670",
+      "tx": "0x8f7ce5feb4f2dcc659ba364b197c4b16fb3bee604574ba83d935b6f43b7e0ac6",
+      "status": "reverted",
+      "at": "2026-11-20T22:28:24.834Z"
+    },
+    {
+      "circle": "0xDe9B384411e882897E5D594fd1c98f8D1eB88dAF",
+      "round": 2,
+      "kind": "replayed",
+      "thief": "0xeb823734d16942c2987dB0716C056F662A4B70B0",
+      "tx": "0x9d88c43d77cda3878f2a1deddaf963fdd027b60301a6a1cc155f482381ae33f7",
+      "status": "reverted",
+      "at": "2026-11-21T03:37:44.103Z"
+    },
+    {
+      "circle": "0x45977b51e66D51bc17e7e0F301997F80a6A000B8",
+      "round": 2,
+      "kind": "forged",
+      "thief": "0x031F38C20696fecbb0C5f032fb26A35cd8764D7b",
+      "tx": "0x4b1b7ce212adfaff6b2976907df42f00e2c30ad9afa6a7742091677e320bd1f0",
+      "status": "reverted",
+      "at": "2026-11-21T08:46:29.457Z"
     }
   ],
   "factoryV1": "0x366d6a029d94a98ba4d93e2eb4dbf07720387d39",
