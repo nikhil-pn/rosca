@@ -2,7 +2,25 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "redirects": [
-    { "source": "/try", "destination": "https://app.rosca.exprmnts.fun/", "permanent": false },
-    { "source": "/try.html", "destination": "https://app.rosca.exprmnts.fun/", "permanent": false }
+    {
+      "source": "/try",
+      "destination": "https://app.rosca.exprmnts.fun/",
+      "permanent": false
+    },
+    {
+      "source": "/try.html",
+      "destination": "https://app.rosca.exprmnts.fun/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/tx/:hash",
+      "destination": "/tx"
+    },
+    {
+      "source": "/api/rest/:path*",
+      "destination": "https://api-testnet.qore.host/:path*"
+    }
   ]
 }

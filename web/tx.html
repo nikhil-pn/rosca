@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Rosca · transaction</title>
+  <meta name="description" content="A Rosca transaction on the QoreChain testnet, read straight from the chain.">
+  <meta name="theme-color" content="#eeeeef">
+  <meta property="og:title" content="Rosca · transaction">
+  <meta property="og:description" content="A Rosca transaction on the QoreChain testnet, read straight from the chain.">
+  <meta property="og:image" content="https://rosca.exprmnts.fun/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/inter-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/glass.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/story.css">
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+  <header class="nav-wrap">
+    <nav class="nav glass sheen" aria-label="Main">
+      <a class="brand" href="/"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="8" rx="8" ry="3.2"/><path d="M4 8v4.5c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2V8c0 1.8-3.6 3.2-8 3.2S4 9.8 4 8Z"/></svg>Rosca</a>
+      <div class="nav-links">
+        <a href="/how">How it works</a>
+        <a href="/live">Live</a>
+        <a href="/security">Security</a>
+        <a href="/proof">Proof</a>
+      </div>
+      <a class="btn-primary" href="https://app.rosca.exprmnts.fun/?mode=live">Start saving</a>
+      <button class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-sheet"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 8h16M4 16h16"/></svg></button>
+    </nav>
+    <div class="nav-sheet glass strong" id="nav-sheet" hidden>
+      <a href="/how">How it works</a>
+      <a href="/live">Live</a>
+      <a href="/security">Security</a>
+      <a href="/proof">Proof</a>
+      <a class="btn-primary" href="https://app.rosca.exprmnts.fun/?mode=live">Start saving</a>
+    </div>
+  </header>
+  <main class="page">
+    <header class="page-head">
+      <p class="eyebrow">Transaction · QoreChain testnet</p>
+      <h1 id="tx-title">Reading the chain…</h1>
+      <p class="lede" id="tx-lede">This page reads the transaction straight from the QoreChain testnet (<code>qorechain-diana</code>, EVM chain id 9800), so you don't have to trust us.</p>
+    </header>
+    <section class="tx glass" id="tx-card" hidden>
+      <div class="tx-status" id="tx-status"></div>
+      <dl class="tx-rows" id="tx-rows"></dl>
+      <div class="tx-events" id="tx-events"></div>
+      <div class="tx-explorer" id="tx-explorer"></div>
+    </section>
+      <footer class="foot">
+        <p>Rosca · built for QoreChain's <i>Build Before Q-Day</i> by Nikhil and Hina · MIT license</p>
+        <p><a href="https://github.com/nikhil-pn/rosca" target="_blank" rel="noopener">GitHub</a> · <a href="https://app.rosca.exprmnts.fun/?mode=demo" target="_blank" rel="noopener">Try demo</a> · <a href="https://build.qorechain.io/p/rosca" target="_blank" rel="noopener">Project page</a> · <a href="https://explore.qore.network/address/0x8197d7a6345b0b087976e5412629514719ccbd2f" target="_blank" rel="noopener">Factory on the explorer</a></p>
+        <p class="fine">Testnet only. fUSD is the fest's test dollar and has no value.</p>
+      </footer>
+  </main>
+  <script type="module" src="/js/nav.js"></script>
+  <script type="module" src="/js/tx.js"></script>
+</body>
+</html>

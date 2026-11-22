@@ -159,3 +159,16 @@ export async function quorumNeeded(c) {
 export async function hasWon(c, member) {
   return uint(word(await call(c, SEL.hasWon + padAddr(member)), 0)) === 1n;
 }
+
+/** The transaction and its receipt, for the /tx page. */
+export const txByHash = (h) => rpc("eth_getTransactionByHash", [h]);
+export const txReceipt = (h) => rpc("eth_getTransactionReceipt", [h]);
+
+/** A contract's name() if it has one (circles and fUSD do), else null. */
+export async function nameOf(address) {
+  try {
+    return decodeString(await call(address, SEL.name));
+  } catch {
+    return null;
+  }
+}

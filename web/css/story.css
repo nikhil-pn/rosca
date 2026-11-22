@@ -125,3 +125,22 @@ code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.88em
   .foot a, .proof-row a, .feed .when, #attempts a { padding: 11px 2px; margin: 0 -2px; -webkit-tap-highlight-color: transparent; }
   .brand { padding: 10px 6px 10px 0; }
 }
+
+/* The transaction page (/tx/<hash>): one glass card read straight from the chain. */
+.tx { margin-top: 28px; border-radius: var(--radius-lg); padding: 22px; max-width: 760px; }
+.tx-status { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+.tx-status .ic { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 19px; flex: none; }
+.tx-status.ok .ic { background: var(--green); }
+.tx-status.bad .ic { background: #ef4444; }
+.tx-status small { display: block; font-size: 14px; font-weight: 400; color: #48484c; letter-spacing: 0; margin-top: 2px; }
+.tx-rows { margin-top: 18px; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px 16px; font-size: 14px; }
+.tx-rows dt { color: var(--muted); }
+.tx-rows dd { overflow-wrap: anywhere; }
+.tx-rows code { font-size: 13px; }
+.tx-events { margin-top: 18px; display: grid; gap: 8px; }
+.tx-events .ev { background: rgba(255, 255, 255, 0.7); border-radius: 14px; padding: 12px 14px; font-size: 14px; }
+.tx-events .ev b { font-weight: 600; }
+.tx-events .ev span { display: block; color: #48484c; font-size: 13px; margin-top: 2px; }
+.tx-explorer { margin-top: 18px; font-size: 14px; color: #48484c; line-height: 1.5; }
+.tx-explorer .btn-glass { margin-top: 10px; }
+@media (max-width: 600px) { .tx-rows { grid-template-columns: minmax(0, 1fr); gap: 2px; } .tx-rows dd { margin-bottom: 10px; } }

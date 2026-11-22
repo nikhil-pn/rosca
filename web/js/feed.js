@@ -3,7 +3,7 @@
 import { CONFIG, who } from "./config.js";
 import * as chain from "./chain.js";
 
-const T = {
+export const T = {
   "0x4f2d18324ee95128de091ed2adc501295479000ce4c2cec607aeb1b67e189e2f": "Paid",
   "0xdcd726e11f8b5e160f00290f0fe3a1abb547474e53a8e7a8f49a85e7b1ca3199": "Bid",
   "0xdb05479599b7e9faa4da19f390edf6e7df6096ed28b928bd6f972502874be2be": "AuctionClosed",
@@ -25,7 +25,7 @@ export const usd = (units) =>
   "$" + (Number(units) / 10 ** CONFIG.fusdDecimals).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /** One readable line for one event: icon, text, sub-line. */
-function describe(name, log, names, quorum) {
+export function describe(name, log, names, quorum) {
   const t = log.topics;
   const d = log.data;
   const circle = names[log.address.toLowerCase()] ?? "circle";
@@ -107,7 +107,7 @@ export async function renderFeed(circles, attacks, quorum, target = "feed", limi
       what.append(small);
       const a = document.createElement("a");
       a.className = "when";
-      a.href = `${CONFIG.explorer}/tx/${it.tx}`;
+      a.href = `https://rosca.exprmnts.fun/tx/${it.tx}`;
       a.target = "_blank";
       a.rel = "noopener";
       a.textContent = ago(it.ts) + " ↗";
