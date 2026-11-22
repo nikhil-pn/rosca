@@ -73,8 +73,10 @@ function every(sec: number): string {
   if (sec < 86400) return `every ${Math.round(sec / 3600)} hours`;
   return `every ${Math.round(sec / 86400)} days`;
 }
-const explorerTx = (h: string) => `${NET.explorer}/tx/${h.startsWith("0x") ? h : h.toUpperCase()}`;
-const txLink = (h: string, label = "View on explorer") => `<a href="${explorerTx(h)}" target="_blank" rel="noopener">${label} ↗</a>`;
+/** Proof links open Rosca's /tx page, which reads the transaction straight from the testnet. The public
+ * explorer opens on mainnet and only knows Cosmos hashes; the /tx page links to it with the right hash. */
+const explorerTx = (h: string) => `${SITE}/tx/${h.startsWith("0x") ? h : h.toUpperCase()}`;
+const txLink = (h: string, label = "Check it on chain") => `<a href="${explorerTx(h)}" target="_blank" rel="noopener">${label} ↗</a>`;
 const nowSec = () => BigInt(Math.floor(Date.now() / 1000));
 
 // ---------------------------------------------------------------- what the chain says now
