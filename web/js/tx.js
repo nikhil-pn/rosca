@@ -131,9 +131,21 @@ async function showNative(hash) {
     types.length === 1 ? types[0].split(".").pop() : "Native transaction",
     `Read straight from the QoreChain testnet at block ${Number(r.height).toLocaleString()}, ${new Date(r.timestamp).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}.`,
   );
+  const win = (body.tx?.body?.messages ?? []).find((m) => /OpenEVMWindow/.test(m["@type"]));
+  let scope = "";
+  if (win) {
+    const targets = win.allowed_targets ?? [];
+    const names = await Promise.all(targets.map((t) => chain.nameOf(t)));
+    scope = [
+      row("Sender", `<code>${esc(win.sender)}</code>`),
+      row("Scoped to", targets.length ? targets.map((t, i) => `${names[i] ? esc(names[i]) + " " : ""}<code>${t}</code>`).join("<br>") + "<br><small>No other contract can be called through this window.</small>" : "any contract"),
+      row("Limits", `${Number(win.max_txs)} transactions, ${Number(win.blocks).toLocaleString()} blocks, at most ${(Number(win.max_value) / 1e6).toLocaleString()} QOR spent`),
+    ].join("");
+  }
   $("tx-rows").innerHTML = [
     row("Hash", `<code>${hash}</code>`),
     row("Messages", types.map((t) => `<code>${esc(t)}</code>`).join("<br>")),
+    scope,
     row("Block", Number(r.height).toLocaleString()),
     row("Gas used", Number(r.gas_used).toLocaleString()),
   ].join("");
