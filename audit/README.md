@@ -43,11 +43,11 @@ and rates the contract quantum-safe. We list all three so the numbers can be com
 
 All 67 tests pass. The fixed contracts are deployed as **factory v3**
 [`0x8197d7a6345b0b087976e5412629514719ccbd2f`](https://explore.qore.network/address/0x8197d7a6345b0b087976e5412629514719ccbd2f)
-(tx [`0x8001ccb6…`](https://explore.qore.network/tx/0x8001ccb6b4378b9011748b8bbe34ceaf4a08a4061c518b1a50767d01c5ac1c69)).
+(tx [`0x8001ccb6…`](https://rosca.exprmnts.fun/tx/0x8001ccb6b4378b9011748b8bbe34ceaf4a08a4061c518b1a50767d01c5ac1c69)).
 
 The audit fixes were first deployed as **factory v2**
 [`0x29053772f08c30c682e0fbb5db3a3d86ac84afef`](https://explore.qore.network/address/0x29053772f08c30c682e0fbb5db3a3d86ac84afef)
-(tx [`0x38abe4b4…`](https://explore.qore.network/tx/0x38abe4b41a22d1254b4b60df24c458cea7affe81002ccda60884ae44978e1f4e)).
+(tx [`0x38abe4b4…`](https://rosca.exprmnts.fun/tx/0x38abe4b41a22d1254b4b60df24c458cea7affe81002ccda60884ae44978e1f4e)).
 Earlier factories stay live so circles opened on them can finish. The site and the app open new circles on v3.
 
 ## Stage 2 findings (QoreChain setting) and what we found
