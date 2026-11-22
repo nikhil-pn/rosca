@@ -71,10 +71,10 @@ export async function renderAttempts(attacks, names) {
       res.textContent = status === "success" ? "went through" : "reverted";
       label.append(res);
       const link = document.createElement("a");
-      link.href = `${CONFIG.explorer}/tx/${a.tx}`;
+      link.href = `https://rosca.exprmnts.fun/tx/${a.tx}`;
       link.target = "_blank";
       link.rel = "noopener";
-      link.textContent = "explorer ↗";
+      link.textContent = "on chain ↗";
       li.append(label, link);
       return li;
     }),
