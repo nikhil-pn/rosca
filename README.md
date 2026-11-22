@@ -11,6 +11,22 @@
 >
 > **App:** https://app.rosca.exprmnts.fun · **Site:** https://rosca.exprmnts.fun ([how it works](https://rosca.exprmnts.fun/how) · [live](https://rosca.exprmnts.fun/live) · [security](https://rosca.exprmnts.fun/security) · [proof](https://rosca.exprmnts.fun/proof))
 
+## For the judges: requirements and where to check them
+
+| Requirement | Where it is | How to check it |
+| --- | --- | --- |
+| **Scoped EVM window** | Every member's window is opened with `allowedTargets` = its circle and fUSD only, signed hybrid (secp256k1 + ML-DSA-87): [`web-src/lib/actions.ts`](web-src/lib/actions.ts) (`ensureWindow`), [`scripts/lib/evm.ts`](scripts/lib/evm.ts) | The keeper's log line `window opened … (scoped to 2 contracts)`; every call in [`docs/PROOF.md`](docs/PROOF.md) went through such a window |
+| **`pqcVerify`** | [`src/libraries/PqcGate.sol`](src/libraries/PqcGate.sol) (`requireSignedBy`), called by `RoscaCircle.release`; the key comes from `pqcKeyStatus` (ML-DSA-87, proof of possession) | A real [ML-DSA-87 payout](https://explore.qore.network/tx/0x68d8f0fbc11f8d18fe5001558b7eebe158c8e9d46db8f6b063087e83b0cadbea) and a [stolen-key payout that reverted](https://explore.qore.network/tx/0x703be9e1d1178d89b97bab28c1ae29ce33377ddcfe8b7a5e72b589eae2d0f660) |
+| **Two-stage QCAI audit** | [`audit/`](audit/): both reports, every finding answered | Before fixes 72/100 (high); after fixes **78/100, medium, rated quantum-safe** |
+| **Foundry tests** | [`test/`](test/): 67 unit, fuzz and invariant tests (money conserved over 128,000 random actions) | `forge test` |
+| Public repo, MIT | [`LICENSE`](LICENSE) | |
+| README and cover | this file, [`media/cover.png`](media/cover.png) | |
+| Video, 3 minutes at most | on the [project page](https://build.qorechain.io/p/rosca) and the site's "Watch demo" | |
+| Testnet addresses | [below](#testnet-addresses) | |
+| Kits credited | [Kits used](#kits-used) | verified on the project page (3 of 3) |
+| AI-Native | [`AI_USAGE.md`](AI_USAGE.md) | |
+| Threat model | [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md): 17 threats, each mapped to a test | |
+
 ## What a rosca is
 
 A **rosca** (rotating savings and credit association) is a group of people who each pay the same amount into a pot
@@ -79,6 +95,19 @@ The site (`web/`) is plain HTML and CSS.
 `scripts/keeper.ts` runs as a service and plays five demo members in one circle after another, one round an hour, so the
 home page always shows a live round. Once per circle it also plays a thief with a stolen classical key; every attempt
 reverts on chain. See [`docs/PROOF.md`](docs/PROOF.md).
+
+## Testnet addresses
+
+`qorechain-diana`, EVM chain id 9800. Explorer: [explore.qore.network](https://explore.qore.network).
+
+| What | Address |
+| --- | --- |
+| RoscaFactory v3 (new circles open here) | [`0x8197d7a6345b0b087976e5412629514719ccbd2f`](https://explore.qore.network/address/0x8197d7a6345b0b087976e5412629514719ccbd2f) |
+| RoscaFactory v2, v1 (their circles still play) | [`0x29053772…afef`](https://explore.qore.network/address/0x29053772f08c30c682e0fbb5db3a3d86ac84afef), [`0x366d6a02…7d39`](https://explore.qore.network/address/0x366d6a029d94a98ba4d93e2eb4dbf07720387d39) |
+| fUSD (the fest's test dollar) | [`0x97143B771D34ddb9130b807b135Ae675A5a963CA`](https://explore.qore.network/address/0x97143B771D34ddb9130b807b135Ae675A5a963CA) |
+| Organiser and deployer (the keeper) | `qor1pmzz6uld3gud6etn609pqgff2fnjlzswutxqyu` · `0x0eC42D73eD8a38DD6573d3ca10212952672F8A0e` |
+| Demo members | `qor1x5dahtmw7aa6vt5mgzeumlzgud7j0d8qnl4wr0`, `qor1yjl4gudedu3n7hv6fmxtmuk940g2nd7s9wrxd6`, `qor192vyu5t8walfqu665quhstkphslj394703mz4m` and two more ([`docs/PROOF.md`](docs/PROOF.md)) |
+| Team wallet (QoreX) | `qor1xnadc6s9tne0f87lrwsw55ld432npqrtf5yxe2` |
 
 ## Security and AI
 
