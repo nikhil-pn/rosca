@@ -15,7 +15,7 @@
 
 | Requirement | Where it is | How to check it |
 | --- | --- | --- |
-| **Scoped EVM window** | Every member's window is opened with `allowedTargets` = its circle and fUSD only, signed hybrid (secp256k1 + ML-DSA-87): [`web-src/lib/actions.ts`](web-src/lib/actions.ts) (`ensureWindow`), [`scripts/lib/evm.ts`](scripts/lib/evm.ts) | The keeper's log line `window opened … (scoped to 2 contracts)`; every call in [`docs/PROOF.md`](docs/PROOF.md) went through such a window |
+| **Scoped EVM window** | Every member's window is opened with `allowedTargets` = its circle and fUSD only, signed hybrid (secp256k1 + ML-DSA-87): [`web-src/lib/actions.ts`](web-src/lib/actions.ts) (`ensureWindow`), [`scripts/lib/evm.ts`](scripts/lib/evm.ts) | A real [window opened on chain](https://rosca.exprmnts.fun/tx/EB18C117114DE90F54D99C9249AFFA4A4D061BDA85EF0E0ACFF17BDB2DB60574): scoped to one circle and fUSD, 20 transactions, 3,000 blocks; every call in [`docs/PROOF.md`](docs/PROOF.md) went through such a window |
 | **`pqcVerify`** | [`src/libraries/PqcGate.sol`](src/libraries/PqcGate.sol) (`requireSignedBy`), called by `RoscaCircle.release`; the key comes from `pqcKeyStatus` (ML-DSA-87, proof of possession) | A real [ML-DSA-87 payout](https://rosca.exprmnts.fun/tx/0x68d8f0fbc11f8d18fe5001558b7eebe158c8e9d46db8f6b063087e83b0cadbea) and a [stolen-key payout that reverted](https://rosca.exprmnts.fun/tx/0x703be9e1d1178d89b97bab28c1ae29ce33377ddcfe8b7a5e72b589eae2d0f660) |
 | **Two-stage QCAI audit** | [`audit/`](audit/): both reports, every finding answered | Before fixes 72/100 (high); after fixes **78/100, medium, rated quantum-safe** |
 | **Foundry tests** | [`test/`](test/): 67 unit, fuzz and invariant tests (money conserved over 128,000 random actions) | `forge test` |
