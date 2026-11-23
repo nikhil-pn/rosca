@@ -99,15 +99,21 @@ export async function registerKey(acc: UnifiedAccount): Promise<string> {
   return broadcastAs(REST, acc, "classical", [msg]);
 }
 
-/** Make sure a live window covers exactly `targets`; otherwise open one, signed hybrid (ML-DSA-87 + secp256k1). */
-export async function ensureWindow(acc: UnifiedAccount, targets: Address[], minTxs = 3n): Promise<string | null> {
+/** Make sure a live window covers exactly `targets`; otherwise open one, signed hybrid (ML-DSA-87 + secp256k1).
+ * The classical key alone can never open a window, and the chain refuses any EVM call outside it. */
+export async function ensureWindow(
+  acc: UnifiedAccount,
+  targets: Address[],
+  minTxs = 3n,
+  limits: { maxTxs?: bigint; blocks?: bigint } = {},
+): Promise<string | null> {
   const w = await evmWindowStatus({ rest: REST, address: acc.cosmos });
   const want = targets.map((t) => t.toLowerCase()).sort().join(",");
   const have = (w.allowedTargets ?? []).map((t: string) => t.toLowerCase()).sort().join(",");
   if (w.found && w.live && BigInt(w.remainingTxs) >= minTxs && want === have) return null;
-  const maxTxs = 20n;
+  const maxTxs = limits.maxTxs ?? 20n;
   const perTx = evmWindowCost({ gas: 3_000_000n, maxFeePerGas: 250_000_000_000n });
-  const msg = openEvmWindowMsg({ sender: acc.cosmos, blocks: 3000n, maxTxs, maxValue: perTx * maxTxs, allowedTargets: targets });
+  const msg = openEvmWindowMsg({ sender: acc.cosmos, blocks: limits.blocks ?? 3000n, maxTxs, maxValue: perTx * maxTxs, allowedTargets: targets });
   const hash = await broadcastAs(REST, acc, "hybrid", [msg]);
   for (let i = 0; i < 30; i++) {
     const s = await evmWindowStatus({ rest: REST, address: acc.cosmos });
@@ -145,7 +151,9 @@ export function reason(e: unknown): string {
   return named ? (named[1] ?? named[2]).trim() : m.split("\n")[0];
 }
 
-export const scope = (circle: Address): Address[] => [circle, NET.fusd];
+/** A member's everyday window reaches their circle and nothing else: not even fUSD, so a stolen classical
+ * key cannot move the member's money. The one fUSD call (approving the circle) gets its own window. */
+export const scope = (circle: Address): Address[] => [circle];
 
 export interface NewCircle {
   name: string;
@@ -180,9 +188,13 @@ export async function createCircle(acc: UnifiedAccount, c: NewCircle): Promise<{
 }
 
 export async function join(acc: UnifiedAccount, circle: Address): Promise<Hex> {
-  await ensureWindow(acc, scope(circle), 6n);
   const allowance = (await pub.readContract({ address: NET.fusd, abi: ERC20, functionName: "allowance", args: [acc.evm as Address, circle] })) as bigint;
-  if (allowance === 0n) await send(acc, NET.fusd, ERC20 as Abi, "approve", [circle, maxUint256], 200_000n);
+  if (allowance === 0n) {
+    // One transaction, a few minutes, fUSD only: the approval uses it up.
+    await ensureWindow(acc, [NET.fusd], 1n, { maxTxs: 1n, blocks: 300n });
+    await send(acc, NET.fusd, ERC20 as Abi, "approve", [circle, maxUint256], 200_000n);
+  }
+  await ensureWindow(acc, scope(circle), 6n);
   return send(acc, circle, circleAbi as Abi, "join", [], 600_000n);
 }
 
@@ -191,7 +203,20 @@ const act = (fn: string, cap: bigint) => async (acc: UnifiedAccount, circle: Add
   return send(acc, circle, circleAbi as Abi, fn, args, cap);
 };
 export const pay = act("pay", 400_000n);
-export const bid = act("bid", 300_000n);
+const LEGACY_BID_ABI = [{ type: "function", name: "bid", inputs: [{ name: "discount", type: "uint256" }], outputs: [], stateMutability: "nonpayable" }] as const satisfies Abi;
+
+/** Bid a discount, signed with the member's ML-DSA-87 key in the browser; the circle checks it with pqcVerify. */
+export async function bid(acc: UnifiedAccount, circle: Address, [discount]: readonly [bigint]): Promise<Hex> {
+  await ensureWindow(acc, scope(circle));
+  const round = await read<bigint>(circle, "currentRound");
+  // Circles opened by earlier factories take an unsigned bid.
+  const v4 = await read<boolean>(circle, "isEligible", [acc.evm, round]).then(() => true, () => false);
+  if (!v4) return send(acc, circle, LEGACY_BID_ABI, "bid", [discount], 300_000n);
+  const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600);
+  const message = await read<Hex>(circle, "bidMessage", [round, acc.evm, discount, deadline]);
+  const signature = bytesToHex(pqcSign(acc.pqc.secretKey, hexToBytes(message)));
+  return send(acc, circle, circleAbi as Abi, "bid", [discount, deadline, signature], 2_500_000n);
+}
 export const closeAuction = act("closeAuction", 1_500_000n);
 export const approve = act("approveRelease", 300_000n);
 export const withdraw = act("withdraw", 300_000n);
