@@ -186,6 +186,26 @@
       "tx": "0xb34ca31665bff1c05175d415f9a0f18252eaeeecfa5fc6af8d3fde8453132c9a",
       "status": "reverted",
       "at": "2026-11-22T20:47:05.517Z"
+    },
+    {
+      "circle": "0x1f0031E2825E554683e64cce5F0C213fc006850d",
+      "round": 1,
+      "kind": "fusd-transfer",
+      "thief": "0xD1275CD95556aE89Fced726618279e57A75d423B",
+      "tx": "",
+      "status": "refused",
+      "at": "2026-11-23T00:15:44.954Z",
+      "reason": "failed to broadcast transaction: the EVM authorisation window for qor192vyu5t8walfqu665quhstkphslj394703mz4m does not admit this transaction: the window does not list 0x97143B771D34ddb9130b807b135Ae675A5a963CA as an allowed recipient: EVM authorisation window exhausted: EVM authorisation window exhausted"
+    },
+    {
+      "circle": "0x1f0031E2825E554683e64cce5F0C213fc006850d",
+      "round": 1,
+      "kind": "classical-send",
+      "thief": "0xD1275CD95556aE89Fced726618279e57A75d423B",
+      "tx": "",
+      "status": "refused",
+      "at": "2026-11-23T00:15:46.440Z",
+      "reason": "Broadcasting transaction failed with code 20 (codespace: pqc). Log: account qor192vyu5t8walfqu665quhstkphslj394703mz4m has a registered PQC key and must include the hybrid signature extension (hybrid mode: required): hybrid PQC signature required"
     }
   ],
   "olderFactories": [
