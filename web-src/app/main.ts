@@ -94,6 +94,8 @@ interface Snap {
   paid: boolean[];
   approved: boolean[];
   won: boolean[];
+  /** May I bid or be picked this round? (v4 circles: paid every round so far and not won yet.) */
+  eligible: boolean;
   needed: number;
   owed: bigint;
   stalled: boolean;
@@ -113,7 +115,7 @@ async function load(): Promise<Snap | null> {
     A.pqcRegistered(acc).catch(() => false),
     DEMO ? Promise.resolve({ uqor: 0n, fusd: 0n }) : A.bankBalances(acc).catch(() => ({ uqor: 0n, fusd: 0n })),
   ]);
-  const s: Snap = { qor, fusd, key, phase: -1, members: [], round: 0, paid: [], approved: [], won: [], needed: 2, owed: 0n, stalled: false, bankFusd: bank.fusd };
+  const s: Snap = { qor, fusd, key, phase: -1, members: [], round: 0, paid: [], approved: [], won: [], eligible: false, needed: 2, owed: 0n, stalled: false, bankFusd: bank.fusd };
   const c = saved.current;
   if (!c) return s;
   s.circle = c;
@@ -135,6 +137,8 @@ async function load(): Promise<Snap | null> {
       Promise.all(members.map((m) => A.read<boolean>(c, "approved", [round, m]))),
     ]);
     Object.assign(s, { r, r1, paid, approved });
+    const i = members.findIndex((m) => m.toLowerCase() === me.toLowerCase());
+    s.eligible = await A.read<boolean>(c, "isEligible", [me, round]).catch(() => i >= 0 && paid[i] && !s.won[i]);
   }
   if (phase >= 2) s.owed = await A.read<bigint>(c, "withdrawable", [me]);
   return s;
@@ -185,14 +189,16 @@ function nextStep(s: Snap): Next {
   if (!r.closed && t <= r.bidEnd) {
     if (!s.paid[i])
       return { key: `pay:${s.round}`, kicker: round, title: `Pay your ${usd(share)} for this round`, body: s.won[i] ? "You already took a pot, so you keep paying your share. If you don't, the security held from your payout covers it." : "Everyone pays in first. Then whoever needs the money most can bid for it.", actions: `<button class="btn-primary" data-act="pay">Pay ${usd(share)}</button>${timer(r.bidEnd)}` };
-    if (!s.won[i] && r.bestBidder === ZERO)
+    if (!s.won[i] && !s.eligible)
+      return { key: `skipped:${s.round}`, kicker: round, title: "You're paid in for this round", body: "You missed an earlier round, so you can't bid for or be picked for a pot in this circle. Keep paying your share: if the circle can't finish, it is dissolved and everyone is refunded by what they put in.", actions: timer(r.bidEnd) };
+    if (s.eligible && r.bestBidder === ZERO)
       return { key: `bid:${s.round}`, kicker: round, title: "Want the pot first?", body: "Bid the discount you'd accept. The biggest discount wins, and the discount is shared with everyone. Or just wait: with no bids, the earliest member who hasn't won takes it.", actions: `<div class="stepper glass"><button data-bid="-1" aria-label="Less">−</button><span id="bid-val"></span><button data-bid="1" aria-label="More">+</button></div><button class="btn-primary" data-act="bid">Bid</button>${timer(r.bidEnd)}` };
     const lead = r.bestBidder !== ZERO ? `${nameOf(r.bestBidder)} leads with a ${usd(r.bestDiscount)} discount.` : "";
-    const canOutbid = !s.won[i] && r.bestBidder.toLowerCase() !== s.members[i].toLowerCase();
+    const canOutbid = s.eligible && r.bestBidder.toLowerCase() !== s.members[i].toLowerCase();
     return { key: `waitbid:${s.round}:${r.bestBidder}:${r.bestDiscount}`, kicker: round, title: "You're paid in. Bidding is open.", body: `${lead} The auction closes when the timer runs out.`, actions: canOutbid ? `<div class="stepper glass"><button data-bid="-1" aria-label="Less">−</button><span id="bid-val"></span><button data-bid="1" aria-label="More">+</button></div><button class="btn-glass" data-act="bid">Outbid</button>${timer(r.bidEnd)}` : timer(r.bidEnd) };
   }
   if (!r.closed)
-    return { key: `close:${s.round}`, kicker: round, title: "Bidding is over", body: DEMO ? "Anyone can close the auction now. Ravi will do it in a few seconds if you don't." : "Anyone in the circle can close the auction now. That picks this round's winner.", actions: `<button class="btn-primary" data-act="close">Close the auction</button>` };
+    return { key: `close:${s.round}`, kicker: round, title: "Bidding is over", body: DEMO ? "Any member can close the auction now. Ravi will do it in a few seconds if you don't." : "Anyone in the circle can close the auction now. That picks this round's winner.", actions: `<button class="btn-primary" data-act="close">Close the auction</button>` };
   if (!r.released) {
     const who = nameOf(r.winner);
     const potLine = `${usd(r.collected - r.discount)} after a ${usd(r.discount)} discount`;
@@ -403,7 +409,7 @@ function confirmTx(o: {
 }
 
 const feeRow: [string, string] = ["Network fee", "≈ 0.01 test QOR"];
-const windowRow = (c: string): [string, string] => ["Can touch", `only ${esc(c)} and fUSD <span class="muted">(scoped window)</span>`];
+const windowRow = (c: string): [string, string] => ["Can touch", `only ${esc(c)} <span class="muted">(scoped window)</span>`];
 
 async function withStep<T>(p: ReturnType<typeof progressIn>, text: string, fn: () => Promise<T>, note?: (v: T) => string): Promise<T> {
   const s = p.step(text);
@@ -639,7 +645,7 @@ async function joinFlow(c: string) {
     ],
     cta: "Join the circle",
     run: async (p) => {
-      const tx = await withStep(p, "Joining through a window scoped to only this circle and fUSD", () => A.join(acc!, c as Address), (h) => txLink(h, "tx"));
+      const tx = await withStep(p, "Approving the circle for fUSD in a one-transaction window, then joining through a window scoped to only this circle", () => A.join(acc!, c as Address), (h) => txLink(h, "tx"));
       done();
       return tx;
     },
@@ -734,7 +740,7 @@ function createFlow() {
       saved.circles = [...saved.circles.filter((c) => c !== made.address), made.address];
       saved.current = made.address;
       save();
-      await withStep(p, "Joining as the first member, through a window scoped to only this circle and fUSD", () => A.join(acc!, made.address), (h) => txLink(h, "tx"));
+      await withStep(p, "Joining as the first member: approve fUSD in a one-transaction window, then join through a window scoped to only this circle", () => A.join(acc!, made.address), (h) => txLink(h, "tx"));
       prev = null;
       await refresh();
       sh.close();
@@ -778,7 +784,7 @@ function startFlow() {
       saved.circles = [...saved.circles.filter((c) => c !== made.address), made.address];
       saved.current = made.address;
       save();
-      await withStep(p, "Joining through a window scoped to only this circle and fUSD", () => A.join(acc!, made.address), (h) => txLink(h, "tx"));
+      await withStep(p, "Approving the circle for fUSD in a one-transaction window, then joining through a window scoped to only this circle", () => A.join(acc!, made.address), (h) => txLink(h, "tx"));
       p.step("Ravi and Meera are on their way").done();
       sh.body.querySelector(".tx-actions")!.innerHTML = `<div class="done-msg">Your circle is open. Round 1 starts when both friends have joined, in about a minute.</div><button class="btn-glass block" data-close>Back to my circle</button>`;
       sh.body.querySelector("[data-close]")!.addEventListener("click", () => sh.close());
@@ -836,10 +842,10 @@ const actions: Record<string, () => void> = {
     confirmTx({
       title: `Bid a ${usd(BigInt(Math.round(bidVal * 1e6)))} discount`,
       lead: "If your bid is the biggest when the timer ends, you take this round's pot minus the discount. The discount is shared with every member.",
-      rows: [["Discount", `${usd(BigInt(Math.round(bidVal * 1e6)))}`], ["You'd take", `${usd(potOf() - BigInt(Math.round(bidVal * 1e6)))} of the ${usd(potOf())} pot`], ["Cap", `${(snap?.info?.maxDiscountBps ?? 3000) / 100}% of the pot`], windowRow("your circle"), feeRow],
-      cta: "Confirm bid",
-      run: (p) => withStep(p, "Placing your bid", () => A.bid(acc!, saved.current!, [BigInt(Math.round(bidVal * 1e6))]), (h) => txLink(h, "tx")),
-      done: () => "Bid placed. It wins if nobody bids higher before the timer ends.",
+      rows: [["Discount", `${usd(BigInt(Math.round(bidVal * 1e6)))}`], ["You'd take", `${usd(potOf() - BigInt(Math.round(bidVal * 1e6)))} of the ${usd(potOf())} pot`], ["Cap", `${(snap?.info?.maxDiscountBps ?? 3000) / 100}% of the pot`], ["Signed with", "ML-DSA-87 · on this device"], windowRow("your circle"), feeRow],
+      cta: "Sign and bid",
+      run: (p) => withStep(p, "Signing your bid with your ML-DSA-87 key and sending it", () => A.bid(acc!, saved.current!, [BigInt(Math.round(bidVal * 1e6))]), (h) => txLink(h, "tx")),
+      done: () => "Bid placed, and your ML-DSA-87 signature checked on chain with pqcVerify. It wins if nobody bids higher before the timer ends.",
     }),
   close: () =>
     confirmTx({
@@ -1055,7 +1061,7 @@ function securityInto(sh: Sheet, back?: () => void) {
   const tried = Object.values(saved.thief);
   sh.show(`<div class="info"><h2>Who can move the pot?</h2><div class="who glass">
     ${row(false, "The organiser", "Opens the circle, nothing else. No owner, no admin, no withdraw function.")}
-    ${row(false, "A thief with your phone key", "Can't make an ML-DSA-87 signature, and your windows only reach your circle and fUSD.")}
+    ${row(false, "A thief with your phone key", "Can't make an ML-DSA-87 signature, so can't bid, collect, or open a window. Your window reaches only your circle, and the chain refuses any other transaction without your post-quantum signature.")}
     ${row(false, "A future quantum computer", "Could break the everyday key. It can't forge ML-DSA-87.")}
     ${row(true, "The winner, with a majority", "Most members approve, and the winner signs this exact payout with ML-DSA-87.")}
     </div><p class="lead">${tried.length ? `You tried to steal a pot ${tried.length === 1 ? "once" : `${tried.length} times`}. ${tried.every((t) => t.status !== "success") ? "The chain refused every time." : ""}` : "When you win a round, the app lets you play the thief against your own pot."}</p></div>`, back);
