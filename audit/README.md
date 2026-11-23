@@ -62,3 +62,18 @@ Earlier factories stay live so circles opened on them can finish. The site and t
 
 No stage 2 finding needed a code change; every point is covered by code and tests that were already in place. The
 stage 1 fixes, and the dissolve fix from our own second review, are what stage 2 audited.
+
+## After stage 2: factory v4 (23 Nov 2026)
+
+Two fresh review agents, briefed only with the fest's rules and acting as judges, found issues neither QCAI run raised.
+They are fixed in factory v4 [`0x36f0e01992b585df9f3752bca56a07dfcdf02817`](https://explore.qore.network/address/0x36f0e01992b585df9f3752bca56a07dfcdf02817):
+
+| Issue | Fix | Tests and evidence |
+| --- | --- | --- |
+| A member could skip shares, pay one round and still take that pot | Only members who paid every round so far (`roundsPaid`) can bid or be picked; the discount goes only to the round's payers | `test_skipper_cannotBidInALaterRound`, `test_skipper_isNeverPickedByDefault`, `test_dividend_onlyToMembersWhoPaid` |
+| A stolen classical key could bid a member into a costly discount | Bids carry the bidder's ML-DSA-87 signature, checked with `pqcVerify` | `test_bid_stolenClassicalKeyCannotBid`, `test_bid_signatureBoundToBidderAndDiscount`, `test_bid_expiredSignatureReverts` |
+| Member windows also allowed fUSD, so a stolen classical key could have moved a payout once it landed | Everyday windows reach only the circle; the fUSD approval uses a one-transaction window | The keeper's `fusd-transfer` and `classical-send` attempts, refused by the chain ([security page](https://rosca.exprmnts.fun/security)) |
+| The tests used a mock of the precompile | Real ML-DSA-87 vectors against the live `pqcVerify` | [`docs/PQC_VECTORS.md`](../docs/PQC_VECTORS.md) |
+
+73 tests pass. Stage 2 audited v3; the v4 code will be run through the auditor on the QoreChain setting as well, and the
+report added here.
