@@ -54,12 +54,12 @@
     <section class="block" id="how">
         <ol class="steps" id="steps">
           <li data-step="pay"><span class="n">1</span><div><h3>Pay</h3><p>Every member pays the monthly share into the circle. Only the contract holds it.</p></div></li>
-          <li data-step="bid"><span class="n">2</span><div><h3>Bid</h3><p>Members who need money now bid the discount they will accept. The highest discount wins, as in a real chit auction, capped at 30%.</p></div></li>
-          <li data-step="close"><span class="n">3</span><div><h3>Close</h3><p>When bidding ends, anyone can close the auction. With no bids, the earliest member who has not won yet takes the pot.</p></div></li>
+          <li data-step="bid"><span class="n">2</span><div><h3>Bid</h3><p>Members who need money now bid the discount they will accept, signed with their <b>ML-DSA-87</b> key. The highest discount wins, as in a real chit auction, up to the cap the circle set (at most 40%). Only members who have paid every round so far can bid.</p></div></li>
+          <li data-step="close"><span class="n">3</span><div><h3>Close</h3><p>When bidding ends, any member can close the auction. With no bids, the earliest member who has paid every round and not won yet takes the pot.</p></div></li>
           <li data-step="approve"><span class="n">4</span><div><h3>Approve</h3><p>A majority of members approve the payout.</p></div></li>
-          <li data-step="release"><span class="n">5</span><div><h3>Release</h3><p>The winner signs the payout with their <b>ML-DSA-87</b> key. The contract checks it on chain with <code>pqcVerify</code>, pays the winner and shares the discount out to every member.</p></div></li>
+          <li data-step="release"><span class="n">5</span><div><h3>Release</h3><p>The winner signs the payout with their <b>ML-DSA-87</b> key. The contract checks it on chain with <code>pqcVerify</code>, pays the winner and shares the discount among the members who paid that round.</p></div></li>
         </ol>
-        <p class="aside">Winners keep paying: part of their pot is held back against their future shares. If a round stalls, members can dissolve the circle. What is left, including that held-back security, goes back by what each member put in minus what each took out.</p>
+        <p class="aside">Winners keep paying: up to half of their pot is held back against their future shares. If a winner stops paying, that security covers what it can, and the rest is the risk the members share, as in any chit fund. If a round stalls, members can dissolve the circle. What is left, including that held-back security, goes back by what each member put in minus what each took out.</p>
       </section>
       <section class="cta-band glass sheen">
         <div><h2>Start your first savings circle</h2><p>Make a wallet, choose the amount and how often, and invite your friends. Every step runs on the QoreChain testnet.</p></div>

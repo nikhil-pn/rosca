@@ -48,7 +48,7 @@
     <section class="block" id="security">
         <div class="who">
           <div class="who-row no"><span class="mark">✕</span><div><h3>The organiser</h3><p>Opens the circle and nothing else. The contract has no owner, no admin, no upgrade and no withdraw function.</p></div></div>
-          <div class="who-row no"><span class="mark">✕</span><div><h3>A thief with a member's wallet key</h3><p>A stolen secp256k1 key cannot make an ML-DSA-87 signature. Each member's EVM window is also scoped to this circle and fUSD, and only their post-quantum key can open a wider one.</p></div></div>
+          <div class="who-row no"><span class="mark">✕</span><div><h3>A thief with a member's wallet key</h3><p>A stolen secp256k1 key cannot make an ML-DSA-87 signature, so it cannot bid, collect a payout, open a window or send a native transaction (the chain refuses them). Each member's window reaches only their circle, so even the fUSD in their wallet stays put.</p></div></div>
           <div class="who-row no"><span class="mark">✕</span><div><h3>A future quantum computer</h3><p>It could recover an ECDSA key from its public key. It cannot forge ML-DSA-87 (NIST FIPS 204, security level 5).</p></div></div>
           <div class="who-row yes"><span class="mark">✓</span><div><h3>The winner, with a majority</h3><p>The payout needs most members' approvals and the winner's ML-DSA-87 signature over this circle, this round, the recipient, the amount and a deadline.</p></div></div>
         </div>
