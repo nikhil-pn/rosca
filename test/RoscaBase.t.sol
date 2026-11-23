@@ -92,6 +92,24 @@ abstract contract RoscaBase is Test {
         return MockPqcPrecompile(PQC_VERIFY).mockSign(pubkeyOf(signer), message);
     }
 
+    /// @dev A bid signature made before the prank: computing it calls the mock precompile, which
+    /// would otherwise use up a vm.prank meant for the bid.
+    function bidSig(RoscaCircle c, address bidder, uint256 discount)
+        internal
+        view
+        returns (uint256 deadline, bytes memory sig)
+    {
+        deadline = block.timestamp + 1 hours;
+        bytes memory message = c.bidMessage(c.currentRound(), bidder, discount, deadline);
+        sig = MockPqcPrecompile(PQC_VERIFY).mockSign(pubkeyOf(bidder), message);
+    }
+
+    function bidAs(address bidder, uint256 discount) internal {
+        (uint256 deadline, bytes memory sig) = bidSig(circle, bidder, discount);
+        vm.prank(bidder);
+        circle.bid(discount, deadline, sig);
+    }
+
     function fill() internal {
         for (uint256 i; i < people.length; ++i) {
             vm.prank(people[i]);
@@ -128,10 +146,7 @@ abstract contract RoscaBase is Test {
     /// the auction closes, a majority approves, the winner releases to themselves.
     function runRound(address bidder, uint256 discount) internal {
         payAll();
-        if (bidder != address(0)) {
-            vm.prank(bidder);
-            circle.bid(discount);
-        }
+        if (bidder != address(0)) bidAs(bidder, discount);
         endBidding();
         vm.prank(people[0]);
         circle.closeAuction();

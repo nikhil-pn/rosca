@@ -19,7 +19,7 @@ contract PayTest is RoscaBase {
         assertTrue(circle.paid(1, people[0]));
         assertEq(circle.getRound(1).collected, SHARE);
         assertEq(circle.paidIn(people[0]), SHARE);
-        assertEq(circle.onTimeRounds(people[0]), 1);
+        assertEq(circle.roundsPaid(people[0]), 1);
     }
 
     function test_pay_twiceReverts() public {

@@ -12,35 +12,33 @@ contract AuctionTest is RoscaBase {
     }
 
     function test_bid_recordsBest() public {
-        vm.prank(people[1]);
-        circle.bid(50e18);
+        bidAs(people[1], 50e18);
         RoscaCircle.Round memory r = circle.getRound(1);
         assertEq(r.bestBidder, people[1]);
         assertEq(r.bestDiscount, 50e18);
     }
 
     function test_bid_mustBeHigher() public {
-        vm.prank(people[1]);
-        circle.bid(50e18);
+        bidAs(people[1], 50e18);
+        (uint256 dl, bytes memory sig) = bidSig(circle, people[2], 50e18);
         vm.prank(people[2]);
         vm.expectRevert(abi.encodeWithSelector(RoscaCircle.BidNotHigher.selector, 50e18, 50e18));
-        circle.bid(50e18);
+        circle.bid(50e18, dl, sig);
     }
 
     function test_bid_higherDiscountTakesTheLead() public {
-        vm.prank(people[1]);
-        circle.bid(50e18);
-        vm.prank(people[2]);
-        circle.bid(80e18);
+        bidAs(people[1], 50e18);
+        bidAs(people[2], 80e18);
         assertEq(circle.getRound(1).bestBidder, people[2]);
     }
 
     function test_bid_capIsFortyPercentAtMost() public {
         uint256 cap = circle.maxDiscount();
         assertEq(cap, (SHARE * SIZE * 3000) / 10000);
+        (uint256 dl, bytes memory sig) = bidSig(circle, people[1], cap + 1);
         vm.prank(people[1]);
         vm.expectRevert(abi.encodeWithSelector(RoscaCircle.DiscountTooHigh.selector, cap + 1, cap));
-        circle.bid(cap + 1);
+        circle.bid(cap + 1, dl, sig);
     }
 
     function test_bid_needsPaymentFirst() public {
@@ -49,16 +47,18 @@ contract AuctionTest is RoscaBase {
             vm.prank(people[i]);
             fresh.join();
         }
+        (uint256 dl, bytes memory sig) = bidSig(fresh, people[0], 1e18);
         vm.prank(people[0]);
         vm.expectRevert(abi.encodeWithSelector(RoscaCircle.NotEligible.selector, people[0]));
-        fresh.bid(1e18);
+        fresh.bid(1e18, dl, sig);
     }
 
     function test_bid_afterBiddingReverts() public {
+        (uint256 dl, bytes memory sig) = bidSig(circle, people[1], 1e18);
         endBidding();
         vm.prank(people[1]);
         vm.expectRevert(abi.encodeWithSelector(RoscaCircle.TooLate.selector, 1));
-        circle.bid(1e18);
+        circle.bid(1e18, dl, sig);
     }
 
     function test_close_tooEarlyReverts() public {
@@ -68,8 +68,7 @@ contract AuctionTest is RoscaBase {
     }
 
     function test_close_bestBidderWins() public {
-        vm.prank(people[3]);
-        circle.bid(70e18);
+        bidAs(people[3], 70e18);
         endBidding();
         vm.prank(people[0]);
         circle.closeAuction();
@@ -99,16 +98,16 @@ contract AuctionTest is RoscaBase {
     }
 
     function test_bid_pastWinnerCannotBidAgain() public {
-        vm.prank(people[1]);
-        circle.bid(40e18);
+        bidAs(people[1], 40e18);
         endBidding();
         vm.prank(people[0]);
         circle.closeAuction();
         approveBy(circle.quorumNeeded());
         releaseTo(people[1]);
         payAll();
+        (uint256 dl, bytes memory sig) = bidSig(circle, people[1], 10e18);
         vm.prank(people[1]);
         vm.expectRevert(abi.encodeWithSelector(RoscaCircle.NotEligible.selector, people[1]));
-        circle.bid(10e18);
+        circle.bid(10e18, dl, sig);
     }
 }

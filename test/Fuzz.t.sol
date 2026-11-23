@@ -15,8 +15,7 @@ contract FuzzTest is RoscaBase {
     function testFuzz_quoteAlwaysAddsUpToThePot(uint256 discount) public {
         discount = bound(discount, 0, circle.maxDiscount());
         if (discount > 0) {
-            vm.prank(people[1]);
-            circle.bid(discount);
+            bidAs(people[1], discount);
         }
         endBidding();
         vm.prank(people[0]);
@@ -30,15 +29,15 @@ contract FuzzTest is RoscaBase {
     function testFuzz_bidAboveCapAlwaysReverts(uint256 discount) public {
         uint256 cap = circle.maxDiscount();
         discount = bound(discount, cap + 1, type(uint128).max);
+        (uint256 dl, bytes memory sig) = bidSig(circle, people[1], discount);
         vm.prank(people[1]);
         vm.expectRevert(abi.encodeWithSelector(RoscaCircle.DiscountTooHigh.selector, discount, cap));
-        circle.bid(discount);
+        circle.bid(discount, dl, sig);
     }
 
     /// A random signer can never release the pot, whoever they are.
     function testFuzz_onlyTheWinnersKeyReleases(address signer) public {
-        vm.prank(people[1]);
-        circle.bid(10e18);
+        bidAs(people[1], 10e18);
         endBidding();
         vm.prank(people[0]);
         circle.closeAuction();

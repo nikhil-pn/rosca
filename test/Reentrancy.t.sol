@@ -27,8 +27,7 @@ contract ReentrancyTest is RoscaBase {
     function test_release_reentryDuringPayoutFails() public {
         openEvilCircle();
         payAll();
-        vm.prank(people[1]);
-        circle.bid(50e18);
+        bidAs(people[1], 50e18);
         endBidding();
         vm.prank(people[0]);
         circle.closeAuction();

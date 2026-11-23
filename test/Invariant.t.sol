@@ -34,11 +34,13 @@ contract CircleHandler is Test {
         if (circle.phase() != RoscaCircle.Phase.Running) return;
         uint256 r = circle.currentRound();
         RoscaCircle.Round memory rd = circle.getRound(r);
-        if (rd.closed || block.timestamp > rd.bidEnd || circle.hasWon(m) || !circle.paid(r, m)) return;
+        if (rd.closed || block.timestamp > rd.bidEnd || !circle.isEligible(m, r)) return;
         discount = bound(discount, rd.bestDiscount + 1, circle.maxDiscount() + 1);
         if (discount > circle.maxDiscount()) return;
+        uint256 deadline = block.timestamp + 1 hours;
+        bytes memory sig = verifier.mockSign(keyOf(m), circle.bidMessage(r, m, discount, deadline));
         vm.prank(m);
-        circle.bid(discount);
+        circle.bid(discount, deadline, sig);
     }
 
     function advance(uint256 secs) external {
@@ -66,12 +68,15 @@ contract CircleHandler is Test {
         }
         uint256 deadline = block.timestamp + 1 hours;
         bytes memory message = circle.payoutMessage(r, rd.winner, deadline);
-        bytes memory pk = new bytes(2592);
-        bytes32 seed = keccak256(abi.encode("mldsa87", rd.winner));
+        circle.release(rd.winner, deadline, verifier.mockSign(keyOf(rd.winner), message));
+    }
+
+    function keyOf(address a) internal pure returns (bytes memory pk) {
+        pk = new bytes(2592);
+        bytes32 seed = keccak256(abi.encode("mldsa87", a));
         assembly {
             mstore(add(pk, 32), seed)
         }
-        circle.release(rd.winner, deadline, verifier.mockSign(pk, message));
     }
 
     function withdraw(uint256 who) external {
