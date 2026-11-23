@@ -13,7 +13,7 @@ tester**, and where it was wrong.
 | | |
 | --- | --- |
 | Agent | Claude Code, one long-running agent session per working day, plus short sub-agents for research |
-| Written by the agent | contracts, 67 tests, deploy and member scripts, the keeper, the faucet function, the site, the app, all docs |
+| Written by the agent | contracts, 73 tests, deploy and member scripts, the keeper, the faucet function, the site, the app, all docs |
 | Written by hand | no code; the template files came from `create-qorechain-dapp`; the humans decided, reviewed and approved |
 | Commits | every commit in `git log` was made by the agent in small steps during the fest; they carry the owner's git name and a `Co-Authored-By` line |
 | Verified by | Foundry (unit, fuzz, invariant), real testnet transactions, and headless-browser runs of every user flow |
@@ -49,7 +49,7 @@ Vercel. Outward or costly actions needed the owner (see section 7).
 | --- | --- | --- |
 | Research | Read 100+ fest project pages and past hackathon winners, compared ideas, and recommended a chit fund on a post-quantum chain; researched ROSCA cadence and the Chit Funds Act | team notes (outside the repo); the result is `docs/PLAN.md` |
 | Contracts | `RoscaCircle` (join, pay, discount auction, approvals, ML-DSA-87 release via `pqcVerify`, security held from winners, dissolve and refunds), `RoscaFactory`, `PqcGate` (reads the registered key from `pqcKeyStatus`, checks the signature with `pqcVerify`) | `src/` |
-| Tests | 67 Foundry tests: unit tests per action, fuzz tests, and an invariant test that money is conserved over 128,000 random actions; mocks for the two PQC precompiles | `test/` |
+| Tests | 73 Foundry tests: unit tests per action, fuzz tests, and an invariant test that money is conserved over 128,000 random actions; mocks for the two PQC precompiles | `test/` |
 | Chain scripts | Accounts, funding, ML-DSA-87 key registration with proof of possession, scoped EVM windows signed with both keys, a hand-encoded `MsgConvertCoin` (the SDK had none), deploy, a full demo round | `scripts/` |
 | The keeper | A service that runs demo circles forever, plays two bots in visitors' circles, sends a real thief attempt once per circle, tops up its accounts and dissolves stalled circles | `scripts/keeper.ts` |
 | Faucet | A Vercel function that funds new demo wallets once, from a throwaway testnet account | `web-src/api/faucet.ts` |
@@ -77,7 +77,7 @@ the architecture of the site and the app. The owner reviewed the results rather 
 
 ## 4. How the AI's work was checked
 
-- **Foundry:** `forge test` runs all 67 tests; fuzz and invariant runs check that money is conserved and that no
+- **Foundry:** `forge test` runs all 73 tests; fuzz and invariant runs check that money is conserved and that no
   sequence of actions lets anyone but the winner, with a majority, move the pot.
 - **The chain:** every feature was run for real on `qorechain-diana`. `docs/PROOF.md` lists the first full round, the
   keeper's circles, and the thief attempts that reverted.
@@ -89,6 +89,8 @@ the architecture of the site and the app. The owner reviewed the results rather 
     2-person circle with custom terms and shares an invite link; the friend opens it, funds and sets up a wallet,
     joins, and both play a round to a signed payout.
 - **Screenshots:** every screen was checked visually at phone and desktop sizes before it was shown to anyone.
+- **Independent review:** fresh agents, given only the fest's rules and the links, judged Rosca as a jury would: reading
+  the code, running the tests, checking the chain and comparing rival entries. Their findings drove factory v4.
 
 ## 5. The AI as security reviewer
 
@@ -101,7 +103,7 @@ The agent designed the contract around the attacks it expected and wrote a test 
 | A thief replays the winner's real signature to another address | The signed message names the recipient | reverted on testnet from the app |
 | A winner stops paying | Part of their pot is held as security and pays their later shares | tests |
 | A round stalls forever | After a grace period members dissolve the circle and get refunds | tests; the keeper dissolved two real stalled circles |
-| A stolen key drains the wallet through other contracts | Member windows are scoped to the circle and fUSD only, and only the post-quantum key can open a wider one | window scripts |
+| A stolen key drains the wallet through other contracts | Member windows reach only the circle (the fUSD approval gets a one-transaction window), and only the post-quantum key can open a window; native transactions need the hybrid signature | the keeper's `fusd-transfer` and `classical-send` attacks, refused by the chain after every payout |
 
 The fest's two-stage QCAI audit ran on top of this review (72/100 before fixes, 78/100 and "quantum-safe" after); the agent drove the dashboard, triaged every finding against the code and tests, and wrote the answers in `audit/`.
 
@@ -133,6 +135,9 @@ the site reads them live.
 | The app's offline cache read a response twice | code review | clone before caching |
 | The landing page showed a test circle a person had made | the owner's screenshot | the site shows only the keeper's circles |
 | On dissolve, a winner's held security went back to the winner, so members who never won lost money; the old test only checked that the pot emptied | the agent's own second review of the contract, after the audit fixes | security joins the refund pool; two new tests that fail on the old code; factory v3 |
+| A member could skip shares, pay one round and still take that pot; bids needed only the classical key | two fresh review agents briefed only with the fest rules, acting as judges | factory v4: signed bids and a paid-every-round rule, six new tests |
+| "A leaked ECDSA key moves nothing" was too strong: member windows also allowed fUSD, so the classical key could have moved a payout once it landed | the same review | circle-only windows, a one-transaction window for the fUSD approval, and a keeper attack after every payout that the chain refuses |
+| Every explorer link in the docs pointed at a page that could not show it (the explorer opens on mainnet and only knows Cosmos hashes) | the agent opening its own proof links in a fresh browser | a `/tx/<hash>` page that reads each transaction straight from the testnet |
 | A two-level subdomain needed the record name `app.rosca`, not `app` | the agent checking the registrar | documented in the team playbook |
 
 ## 9. What the AI did not do
@@ -144,7 +149,7 @@ the site reads them live.
 ## Reproduce
 
 ```bash
-forge test                                   # 67 tests
+forge test                                   # 73 tests
 npm run rosca -- status                      # demo accounts on the testnet
 npx tsx scripts/demo-round.ts                # one full round on the testnet
 npm run build:app                            # build the app into web-app/
