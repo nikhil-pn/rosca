@@ -82,7 +82,8 @@ the money, and a key that is safe today can be broken by a quantum computer tomo
 
 **Demo** is a guided version: Rosca's faucet funds the wallet and two bots, Ravi and Meera, play a 3-person circle with
 2-minute rounds, so anyone can see a full round in about five minutes. Demo also lets you **play the thief**: send the
-pot to a stranger with your own real signature, and watch it revert on chain.
+pot to a stranger with your own real signature and watch it revert on chain; then, once the pot is in your wallet, try
+to move it with the classical key alone and watch the chain refuse both an fUSD transfer and a native send.
 
 How it works, who can move the pot, your keys, the recovery phrase and the proof links live behind the profile button.
 
