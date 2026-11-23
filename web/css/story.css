@@ -144,3 +144,4 @@ code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.88em
 .tx-explorer { margin-top: 18px; font-size: 14px; color: #48484c; line-height: 1.5; }
 .tx-explorer .btn-glass { margin-top: 10px; }
 @media (max-width: 600px) { .tx-rows { grid-template-columns: minmax(0, 1fr); gap: 2px; } .tx-rows dd { margin-bottom: 10px; } }
+.attempts .why { display: block; margin-top: 4px; font-size: 12px; line-height: 1.4; color: rgba(255, 255, 255, 0.6); white-space: normal; }

@@ -57,25 +57,41 @@ export function renderHeader(info, round) {
   timer = setInterval(tick, 1000);
 }
 
-/** The keeper's thief attempts, each checked against its on-chain receipt. */
+const ATTACK = {
+  forged: "Payout with a forged signature",
+  replayed: "Payout with the winner's signature, replayed",
+  "fusd-transfer": "fUSD transfer of the payout to the thief",
+  "classical-send": "Native send with the classical key only",
+};
+
+/** The keeper's thief attempts. Release attempts land on chain and revert; drain attempts are refused by
+ * the chain before they reach a block, so they show the chain's own refusal instead of a transaction. */
 export async function renderAttempts(attacks, names) {
   if (!attacks.length || !document.getElementById("attempts")) return;
   const rows = await Promise.all(
-    attacks.slice(-6).reverse().map(async (a) => {
-      const status = await chain.receiptStatus(a.tx).catch(() => a.status);
+    attacks.slice(-8).reverse().map(async (a) => {
+      const status = a.tx ? await chain.receiptStatus(a.tx).catch(() => a.status) : a.status;
       const li = document.createElement("li");
       const label = document.createElement("span");
-      label.textContent = `${a.kind === "forged" ? "Forged signature" : "Replayed signature"} · round ${a.round} · ${names[a.circle.toLowerCase()] ?? "circle"} · `;
+      label.textContent = `${ATTACK[a.kind] ?? a.kind} · round ${a.round} · ${names[a.circle.toLowerCase()] ?? "circle"} · `;
       const res = document.createElement("span");
       res.className = status === "success" ? "" : "bad";
-      res.textContent = status === "success" ? "went through" : "reverted";
+      res.textContent = status === "success" ? "went through" : status === "refused" ? "refused by the chain" : "reverted";
       label.append(res);
-      const link = document.createElement("a");
-      link.href = `https://rosca.exprmnts.fun/tx/${a.tx}`;
-      link.target = "_blank";
-      link.rel = "noopener";
-      link.textContent = "on chain ↗";
-      li.append(label, link);
+      if (a.tx) {
+        const link = document.createElement("a");
+        link.href = `https://rosca.exprmnts.fun/tx/${a.tx}`;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = "on chain ↗";
+        li.append(label, link);
+      } else {
+        const why = document.createElement("small");
+        why.className = "why";
+        why.textContent = a.reason ? `“${a.reason.replace(/^failed to broadcast transaction: /, "").slice(0, 160)}…”` : "";
+        label.append(document.createElement("br"), why);
+        li.append(label);
+      }
       return li;
     }),
   );
