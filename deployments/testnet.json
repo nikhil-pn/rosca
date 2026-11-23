@@ -42,11 +42,41 @@
       "address": "0x5B807313C6A12C044F5680f93eF6804f22Fc0987",
       "name": "Office kuri #7",
       "tx": "0x8a22d67f1612470916c9fc81d57cad4deab5a47621ed6d3f58b49efe44bac99a"
+    },
+    {
+      "address": "0xB45eCd23C38A16e3d73689e812776965d58ACa4E",
+      "name": "Family chit #8",
+      "tx": "0xecb11dc3fd4a139bab36ba11194252a512db1414f41090dc140f248636f689a2"
+    },
+    {
+      "address": "0x4192416467A7f2034fFe159e82A2Ef605F65B716",
+      "name": "Friends kameti #9",
+      "tx": "0x618440cdac9561cb4a6724e7be5a2aefb7079bebcb55d2b2f23e688487b5788a"
+    },
+    {
+      "address": "0x0D3677C8F925a704082d7127d26A872eCD46e5E7",
+      "name": "Office kuri #10",
+      "tx": "0x1255b1567aff0ab1de8c8a7852f13dd5630f1a7d8a74f8d920adb102348085ee"
+    },
+    {
+      "address": "0x8fCda975398Bd266ce7aAA90844a30499879e734",
+      "name": "Family chit #11",
+      "tx": "0xdbb9540eb6394ed1fc2b8acf458c5e313c4fde0d80cb6bc0c375f75d686f5504"
+    },
+    {
+      "address": "0x8544e76905ced5A701632D1D9B1Fc93F9d50eDA2",
+      "name": "Friends kameti #12",
+      "tx": "0xd189e65ed3f12161c1eec55a34e8e104db03b6ea2dc8968145d5e73d98410473"
+    },
+    {
+      "address": "0x1f0031E2825E554683e64cce5F0C213fc006850d",
+      "name": "Office kuri #13",
+      "tx": "0x1d7937c9f2fbe3e430bbffabf6d60b9af135057d7295c3fe509257cebf6a8447"
     }
   ],
   "live": {
-    "address": "0x5B807313C6A12C044F5680f93eF6804f22Fc0987",
-    "count": 7
+    "address": "0x1f0031E2825E554683e64cce5F0C213fc006850d",
+    "count": 13
   },
   "attacks": [
     {
@@ -111,6 +141,51 @@
       "tx": "0x35283b854bc49df29ab6540457e513e393459ea4f8b1e8ed0b40345bce2b46bc",
       "status": "reverted",
       "at": "2026-11-21T19:04:28.239Z"
+    },
+    {
+      "circle": "0xB45eCd23C38A16e3d73689e812776965d58ACa4E",
+      "round": 2,
+      "kind": "replayed",
+      "thief": "0x1f23FAD6eB57fe8e72460364c637f6d10d212eC0",
+      "tx": "0x8da753225eeca63b31d66223b385e58a29186e8ce23eba99a18e4469e2772b1c",
+      "status": "reverted",
+      "at": "2026-11-22T00:13:22.011Z"
+    },
+    {
+      "circle": "0x4192416467A7f2034fFe159e82A2Ef605F65B716",
+      "round": 2,
+      "kind": "forged",
+      "thief": "0x03E990B6243BEe9398C51227C68909067bDAb6AE",
+      "tx": "0x10c3346016f9063a3ae64ea5e20f4e4285cba30488db9bc60b1eb0fd4eb1b0ad",
+      "status": "reverted",
+      "at": "2026-11-22T05:21:01.852Z"
+    },
+    {
+      "circle": "0x0D3677C8F925a704082d7127d26A872eCD46e5E7",
+      "round": 2,
+      "kind": "replayed",
+      "thief": "0xC8bc6C07b7CF49bAE997E94ce81A989DCedC3b4F",
+      "tx": "0xd738f4f23b8d654eac5905d449aeb14239c3805ad930b9f81cfd56fd470a2ee4",
+      "status": "reverted",
+      "at": "2026-11-22T10:29:49.080Z"
+    },
+    {
+      "circle": "0x8fCda975398Bd266ce7aAA90844a30499879e734",
+      "round": 2,
+      "kind": "forged",
+      "thief": "0x7f27E7E30e375fDF0f050CB4cFccf55cc1C57099",
+      "tx": "0x2b570d7665cfaea175e70dbc03ce83b8649c9bb9b34581591215ce8d0e96e216",
+      "status": "reverted",
+      "at": "2026-11-22T15:38:57.940Z"
+    },
+    {
+      "circle": "0x8544e76905ced5A701632D1D9B1Fc93F9d50eDA2",
+      "round": 2,
+      "kind": "replayed",
+      "thief": "0x0E90824A98B7627021440F211D5898DfEd5646CA",
+      "tx": "0xb34ca31665bff1c05175d415f9a0f18252eaeeecfa5fc6af8d3fde8453132c9a",
+      "status": "reverted",
+      "at": "2026-11-22T20:47:05.517Z"
     }
   ],
   "olderFactories": [
@@ -123,8 +198,13 @@
       "address": "0x29053772f08c30c682e0fbb5db3a3d86ac84afef",
       "tx": "0x38abe4b41a22d1254b4b60df24c458cea7affe81002ccda60884ae44978e1f4e",
       "note": "v2: audit fixes (members close the auction, token must be a contract); retired because dissolve returned held security to winners"
+    },
+    {
+      "address": "0x8197d7a6345b0b087976e5412629514719ccbd2f",
+      "tx": "0x8001ccb6b4378b9011748b8bbe34ceaf4a08a4061c518b1a50767d01c5ac1c69",
+      "note": "v3: dissolve fix; retired because bids were unsigned and a member could skip rounds and still win"
     }
   ],
-  "factory": "0x8197d7a6345b0b087976e5412629514719ccbd2f",
-  "factoryTx": "0x8001ccb6b4378b9011748b8bbe34ceaf4a08a4061c518b1a50767d01c5ac1c69"
+  "factory": "0x36f0e01992b585df9f3752bca56a07dfcdf02817",
+  "factoryTx": "0xf2bf71c2079e3777c59d6bb4982b6971f850dd78561b528c2080329d8d6e7ab3"
 }

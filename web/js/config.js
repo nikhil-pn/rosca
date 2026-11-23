@@ -3,9 +3,9 @@ export const CONFIG = {
   evmRpc: "https://evm-testnet.qore.host",
   explorer: "https://explore.qore.network",
   /** The current factory. New circles open here. */
-  factory: "0x8197d7a6345b0b087976e5412629514719ccbd2f",
+  factory: "0x36f0e01992b585df9f3752bca56a07dfcdf02817",
   /** Earlier factories, oldest first. Their circles stay live, so the site reads them all. */
-  olderFactories: ["0x366d6a029d94a98ba4d93e2eb4dbf07720387d39", "0x29053772f08c30c682e0fbb5db3a3d86ac84afef"],
+  olderFactories: ["0x366d6a029d94a98ba4d93e2eb4dbf07720387d39", "0x29053772f08c30c682e0fbb5db3a3d86ac84afef", "0x8197d7a6345b0b087976e5412629514719ccbd2f"],
   factoryBlock: 10437979,
   fusd: "0x97143B771D34ddb9130b807b135Ae675A5a963CA",
   fusdDecimals: 6,
