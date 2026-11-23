@@ -18,8 +18,8 @@ import * as c from "./lib/circle.ts";
 import { CONFIG } from "./lib/config.ts";
 import { readDeployments, writeDeployments } from "./lib/deployments.ts";
 import { ensureWindow, publicClient, qorechainTestnet, walletFor } from "./lib/evm.ts";
-import { broadcastAs, fundFusd, fundQor } from "./lib/native.ts";
-import { fromHex, toBech32 } from "@cosmjs/encoding";
+import { fundFusd, fundQor } from "./lib/native.ts";
+import { thiefDrains } from "./lib/thief.ts";
 
 const ROUND = Number(process.env.ROSCA_ROUND_SECONDS ?? 1800);
 const TICK = Number(process.env.ROSCA_TICK_SECONDS ?? 10) * 1000;
@@ -138,45 +138,6 @@ async function thiefTries(circle: Address, winner: UnifiedAccount, round: bigint
   return hash;
 }
 
-/**
- * After the payout lands, the thief (still holding only the winner's classical key) goes for the money
- * itself: an EVM `fUSD.transfer` of the winner's balance, and a native send of the winner's QOR. The chain
- * refuses both before they reach a block: the winner's window lists only the circle, and every native
- * transaction from an account with a PQC key needs the ML-DSA-87 signature. The refusals are recorded.
- */
-async function thiefDrains(circle: Address, winner: UnifiedAccount, round: bigint): Promise<void> {
-  const thief = privateKeyToAccount(generatePrivateKey()).address;
-  const record = (kind: string, reason: string) => {
-    log(`thief (${kind}) -> refused: ${reason.slice(0, 120)}`, "");
-    const d = readDeployments();
-    d.attacks = [...(d.attacks ?? []), { circle, round: Number(round), kind, thief, tx: "", status: "refused", at: new Date().toISOString(), reason }];
-    writeDeployments(d);
-  };
-  const why = (e: unknown) => {
-    const x = e as { details?: string; shortMessage?: string; message?: string };
-    return String(x.details ?? x.shortMessage ?? x.message ?? e).replace(/\s*\[cosmossdk[^\]]*\]/g, "").slice(0, 400);
-  };
-  const balance = (await publicClient.readContract({ address: CONFIG.fusd, abi: ERC20_TRANSFER, functionName: "balanceOf", args: [winner.evm as Address] })) as bigint;
-  try {
-    const h = await walletFor(winner).writeContract({ address: CONFIG.fusd, abi: ERC20_TRANSFER, functionName: "transfer", args: [thief, balance], gas: 100_000n, chain: qorechainTestnet });
-    log("ALERT: fUSD transfer was admitted", h);
-  } catch (e) {
-    record("fusd-transfer", why(e));
-  }
-  try {
-    const msg = { typeUrl: "/cosmos.bank.v1beta1.MsgSend", value: { fromAddress: winner.cosmos, toAddress: toBech32("qor", fromHex(thief.slice(2))), amount: [{ denom: "uqor", amount: "1000000" }] } };
-    const h = await broadcastAs(winner, "classical", [msg as never]);
-    log("ALERT: classical native send was admitted", h);
-  } catch (e) {
-    record("classical-send", why(e));
-  }
-}
-
-const ERC20_TRANSFER = [
-  { type: "function", name: "transfer", inputs: [{ name: "to", type: "address" }, { name: "value", type: "uint256" }], outputs: [{ type: "bool" }], stateMutability: "nonpayable" },
-  { type: "function", name: "balanceOf", inputs: [{ name: "a", type: "address" }], outputs: [{ type: "uint256" }], stateMutability: "view" },
-] as const;
-
 async function step(circle: Address): Promise<"done" | "wait"> {
   const phase = PHASE[await c.read<number>(circle, "phase")];
   if (phase === "Completed" || phase === "Dissolved") {
@@ -227,7 +188,7 @@ async function step(circle: Address): Promise<"done" | "wait"> {
     if (round === 2n) {
       const d = readDeployments();
       const drained = (d.attacks ?? []).some((a) => a.circle.toLowerCase() === circle.toLowerCase() && a.kind === "fusd-transfer");
-      if (!drained) await thiefDrains(circle, winner, round).catch((e) => log("thief drain attempt failed to run:", e.message ?? e));
+      if (!drained) await thiefDrains(circle, winner, round, log).catch((e) => log("thief drain attempt failed to run:", e.message ?? e));
     }
   }
   return "wait";
