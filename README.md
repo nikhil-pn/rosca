@@ -117,10 +117,18 @@ to it with that hash.
 - [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md): who might attack, what stops each attack, and the risk that is left.
 - [`docs/PROOF.md`](docs/PROOF.md): every claim as a testnet transaction.
 - [`AI_USAGE.md`](AI_USAGE.md): how an AI coding agent built Rosca, what the humans did, and how the work was checked.
+- [`docs/AI_LOG.md`](docs/AI_LOG.md): the build, session by session: each brief, what the agent did, what the humans decided, with commits.
+- [`docs/PQC_VECTORS.md`](docs/PQC_VECTORS.md): real ML-DSA-87 signatures against the live `pqcVerify` precompile.
 - [`audit/`](audit/): the two-stage QCAI audit. Stage 1 (before fixes): 72/100, high risk, 6 findings, each fixed
   or answered. Stage 2 (after fixes, QoreChain setting): **78/100, medium risk, rated quantum-safe**; every finding is
   answered there with the code and test that already covers it. The audit covers the contract source, so it applies to any network the same code is
   deployed on.
+
+## Mainnet
+
+QoreChain mainnet (`qorechain-vladi`) has no stablecoin and no ERC-20 form of QOR yet (its ERC-20 token-pair registry is
+empty), so a savings circle there would have to use a token we minted ourselves. Rosca stays on the testnet with the
+fest's fUSD; the contracts are network-agnostic and need only an ERC-20 dollar to run on mainnet.
 
 ## Kits used
 

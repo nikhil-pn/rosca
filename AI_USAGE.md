@@ -6,6 +6,8 @@ Rosca was built by a two-person team working with an AI coding agent, [Claude Co
 build, set the design and the rules, made every product decision, reviewed the results, and did the steps only a
 person can do (signing in, typing SMS codes, approving spending).
 
+A session-by-session log, with each brief, what the agent did, what the humans decided and the commits that show it, is in [`docs/AI_LOG.md`](docs/AI_LOG.md).
+
 This file covers the three things the Best AI-Native Build award asks for: **the workflow**, **the generated work** and
 **the human contribution**. It also documents how the agent acted as a **security reviewer** and an **autonomous
 tester**, and where it was wrong.
