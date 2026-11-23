@@ -18,7 +18,7 @@ export interface Deployments {
   /** The circle the keeper is running now, and how many it has opened. */
   live?: { address: Address; count: number };
   /** Thief attempts sent on purpose by the keeper. Each one reverts on chain. */
-  attacks?: { circle: Address; round: number; kind: string; thief: Address; tx: string; status: string; at: string }[];
+  attacks?: { circle: Address; round: number; kind: string; thief: Address; tx: string; status: string; at: string; reason?: string }[];
 }
 
 export function readDeployments(): Deployments {
