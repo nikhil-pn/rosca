@@ -876,6 +876,7 @@ const actions: Record<string, () => void> = {
     }),
   collect: () => collectFlow(),
   thief: () => thiefFlow(),
+  drain: () => drainFlow(),
   withdraw: () =>
     confirmTx({
       title: `Withdraw ${usd(snap?.owed ?? 0n)}`,
@@ -914,7 +915,7 @@ function collectFlow() {
       save();
       return res.tx;
     },
-    done: (tx) => `<span class="big-ok">✓</span> The pot is yours. Part of it is held as security until you've paid your remaining shares.<br>${tx ? txLink(tx) : ""}`,
+    done: (tx) => `<span class="big-ok">✓</span> The pot is yours. Part of it is held as security until you've paid your remaining shares.<br>${tx ? txLink(tx) : ""}<button class="btn-glass block" data-act="drain">Now try to steal it from the wallet</button>`,
   });
 }
 
@@ -946,6 +947,39 @@ function thiefFlow() {
         collectFlow();
       });
       await refresh();
+    } catch (e) {
+      go.disabled = false;
+      go.textContent = "Try again";
+      toast(friendly(e), "err", 6000);
+    }
+  });
+}
+
+/** The thief's second move: the payout is now in the wallet, and the thief holds only the classical key. */
+function drainFlow() {
+  const sh = openSheet(`
+    <div class="tx">
+      <p class="kicker">Security test</p>
+      <h2>Take it from the wallet</h2>
+      <p class="lead">The pot is in your wallet now. Pretend you stole your phone's everyday key, the one a quantum computer could one day recover. Send the money to a stranger with that key alone.</p>
+      <dl class="rows glass"><div><dt>Try 1</dt><dd>send all your fUSD to a stranger (EVM)</dd></div><div><dt>Try 2</dt><dd>send 1 QOR to a stranger (native), signed with the classical key only</dd></div><div><dt>Expected</dt><dd>both refused by the chain</dd></div></dl>
+      <div class="tx-progress" hidden></div>
+      <div class="tx-actions"><button class="btn-primary block" data-go>Try to move the money</button></div>
+    </div>`);
+  const go = sh.body.querySelector<HTMLButtonElement>("[data-go]")!;
+  go.addEventListener("click", async () => {
+    go.disabled = true;
+    go.innerHTML = `<span class="spinner light"></span> Trying…`;
+    const pEl = sh.body.querySelector<HTMLElement>(".tx-progress")!;
+    pEl.hidden = false;
+    const p = progressIn(pEl);
+    try {
+      const res = await withStep(p, "Sending your fUSD and QOR to a stranger, classical key only", () => A.stealFromWallet(acc!, saved.current!));
+      const ok = !res.evm.startsWith("admitted") && !res.native.startsWith("admitted");
+      sh.body.querySelector(".tx-actions")!.innerHTML = `<div class="done-msg ${ok ? "" : "bad"}">${ok ? `<span class="big-no">✕</span> <b>Both refused by the chain.</b> Nothing reached a block, and your ${usd(res.amount)} stayed put.` : "Something was admitted. That should never happen."}
+        <dl class="rows glass quote"><div><dt>fUSD transfer</dt><dd>“${esc(res.evm.slice(0, 220))}”</dd></div><div><dt>Native send</dt><dd>“${esc(res.native.slice(0, 220))}”</dd></div></dl>
+        <p class="muted">Your window reaches only your circle, and every native transaction needs your ML-DSA-87 signature.</p></div><button class="btn-primary block" data-close>Done</button>`;
+      sh.body.querySelector("[data-close]")!.addEventListener("click", () => sh.close());
     } catch (e) {
       go.disabled = false;
       go.textContent = "Try again";

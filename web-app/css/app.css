@@ -308,3 +308,5 @@ textarea.field { height: auto; padding: 14px 16px; line-height: 1.5; resize: non
 .pf-mode b { font-size: 15px; font-weight: 600; color: var(--ink); }
 .pf-mode .txt span { font-size: 13px; color: var(--muted); }
 .pf-mode i { margin-left: auto; font-style: normal; color: var(--muted); }
+.rows.quote dd { font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; text-align: left; }
+.rows.quote { margin-top: 10px; }
