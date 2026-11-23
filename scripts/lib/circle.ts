@@ -6,7 +6,7 @@
  * checked on chain by the circle through the pqcVerify precompile.
  */
 import { pqcSign, type UnifiedAccount } from "@qorechain/sdk";
-import { bytesToHex, hexToBytes, maxUint256, type Address, type Hex } from "viem";
+import { bytesToHex, hexToBytes, maxUint256, type Abi, type Address, type Hex } from "viem";
 import { CONFIG } from "./config.ts";
 import { artifact, ensureWindow, publicClient, send } from "./evm.ts";
 
@@ -39,9 +39,10 @@ export interface CircleParams {
   graceSeconds: number;
 }
 
-/** Targets of a member's scoped window: the circle and the fUSD token, nothing else.
+/** Targets of a member's everyday window: the circle, nothing else. Not even fUSD, so a stolen classical
+ * key cannot move the member's money; the one fUSD call (approving the circle) gets its own one-tx window.
  * (Every helper below takes an optional `targets` for a bot that plays several circles at once.) */
-export const scope = (circle: Address): Address[] => [circle, CONFIG.fusd];
+export const scope = (circle: Address): Address[] => [circle];
 
 export async function createCircle(organiser: UnifiedAccount, factory: Address, p: CircleParams) {
   await ensureWindow(organiser, [factory]);
@@ -72,14 +73,18 @@ export async function read<T>(circle: Address, functionName: string, args: reado
 }
 
 export async function join(m: UnifiedAccount, circle: Address, targets?: Address[]): Promise<Hex> {
-  await ensureWindow(m, targets ?? scope(circle), 4n);
   const allowance = (await publicClient.readContract({
     address: CONFIG.fusd,
     abi: ERC20_APPROVE,
     functionName: "allowance",
     args: [m.evm as Address, circle],
   })) as bigint;
-  if (allowance === 0n) await send(m, CONFIG.fusd, ERC20_APPROVE, "approve", [circle, maxUint256], 200_000n);
+  if (allowance === 0n) {
+    // One transaction, a few minutes, fUSD only: the approval uses it up.
+    await ensureWindow(m, [CONFIG.fusd], 1n, { maxTxs: 1n, blocks: 300n });
+    await send(m, CONFIG.fusd, ERC20_APPROVE, "approve", [circle, maxUint256], 200_000n);
+  }
+  await ensureWindow(m, targets ?? scope(circle), 4n);
   return send(m, circle, circleAbi, "join", [], 600_000n);
 }
 
@@ -88,10 +93,19 @@ export async function pay(m: UnifiedAccount, circle: Address, targets?: Address[
   return send(m, circle, circleAbi, "pay", [], 400_000n);
 }
 
+const LEGACY_BID_ABI = [{ type: "function", name: "bid", inputs: [{ name: "discount", type: "uint256" }], outputs: [], stateMutability: "nonpayable" }] as const;
+
+/** Bid a discount, signed with the member's ML-DSA-87 key (circles from factory v4 on check it with pqcVerify). */
 export async function bid(m: UnifiedAccount, circle: Address, discountFusd: number, targets?: Address[]): Promise<Hex> {
   await ensureWindow(m, targets ?? scope(circle));
   const discount = BigInt(Math.round(discountFusd * 10 ** CONFIG.fusdDecimals));
-  return send(m, circle, circleAbi, "bid", [discount], 300_000n);
+  const round = await read<bigint>(circle, "currentRound");
+  const signed = await read<boolean>(circle, "isEligible", [m.evm, round]).then(() => true, () => false);
+  if (!signed) return send(m, circle, LEGACY_BID_ABI as unknown as Abi, "bid", [discount], 300_000n);
+  const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600);
+  const message = await read<Hex>(circle, "bidMessage", [round, m.evm, discount, deadline]);
+  const signature = bytesToHex(pqcSign(m.pqc.secretKey, hexToBytes(message)));
+  return send(m, circle, circleAbi, "bid", [discount, deadline, signature], 2_500_000n);
 }
 
 export async function closeAuction(m: UnifiedAccount, circle: Address, targets?: Address[]): Promise<Hex> {

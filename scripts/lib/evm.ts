@@ -74,12 +74,17 @@ export async function windowStatus(acc: UnifiedAccount) {
 }
 
 /** Make sure the account has a live window that covers `targets` (or any target if empty). */
-export async function ensureWindow(acc: UnifiedAccount, targets: Address[] = [], minTxs = 3n): Promise<void> {
+export async function ensureWindow(
+  acc: UnifiedAccount,
+  targets: Address[] = [],
+  minTxs = 3n,
+  limits: { maxTxs?: bigint; blocks?: bigint } = {},
+): Promise<void> {
   const w = await windowStatus(acc);
   const want = targets.map((t) => t.toLowerCase()).sort().join(",");
   const have = (w.allowedTargets ?? []).map((t: string) => t.toLowerCase()).sort().join(",");
   if (w.found && w.live && BigInt(w.remainingTxs) >= minTxs && want === have) return;
-  const hash = await openWindow(acc, { allowedTargets: targets });
+  const hash = await openWindow(acc, { allowedTargets: targets, ...limits });
   console.log(`  window opened for ${acc.evm}${targets.length ? ` (scoped to ${targets.length} contracts)` : ""}: ${hash}`);
   await waitForWindow(acc);
 }
