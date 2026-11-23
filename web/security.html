@@ -54,7 +54,7 @@
         </div>
         <div class="thief">
           <h3>The thief test, run for real</h3>
-          <p>Once per circle the keeper plays a thief who has stolen the winner's classical key. The thief sends <code>release</code> to their own address, either with a signature from their own ML-DSA-87 key or with the winner's real signature replayed for another recipient. Every attempt lands on chain and fails.</p>
+          <p>Once per circle the keeper plays a thief who has stolen the winner's classical key. The thief sends <code>release</code> to their own address, either with a signature from their own ML-DSA-87 key or with the winner's real signature replayed for another recipient. Every attempt lands on chain and fails. Then, after the payout, the thief goes for the money itself with the classical key alone: an fUSD transfer and a native send. The chain refuses both before they reach a block, and its own words are shown below.</p>
           <ul class="attempts" id="attempts"><li class="empty">The first attempt runs in round 2 of the live circle.</li></ul>
         </div>
       </section>
