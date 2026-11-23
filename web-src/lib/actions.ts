@@ -279,7 +279,7 @@ export async function stealFromWallet(acc: UnifiedAccount, circle: Address): Pro
     const h = await wallet(acc).writeContract({ address: NET.fusd, abi: ERC20, functionName: "transfer", args: [stranger, amount], gas: 100_000n, chain });
     evm = `admitted?! ${h}`;
   } catch (e) {
-    evm = words(e);
+    evm = words(e).replace(/: EVM authorisation window exhausted.*$/, "");
   }
   try {
     const h = await broadcastAs(REST, acc, "classical", [
@@ -287,7 +287,7 @@ export async function stealFromWallet(acc: UnifiedAccount, circle: Address): Pro
     ]);
     native = `admitted?! ${h}`;
   } catch (e) {
-    native = words(e).replace(/^tx \S+ failed \(code \d+\): /, "");
+    native = words(e).replace(/^tx \S+ failed \(code \d+\): /, "").replace(/ \(account qor1.*$/, "");
   }
   return { evm, native, amount };
 }
