@@ -5,6 +5,7 @@
 import { deriveUnifiedAccount, generateMnemonic, validateMnemonic, type UnifiedAccount } from "@qorechain/sdk";
 import type { Address } from "viem";
 import * as A from "../lib/actions.ts";
+import * as Q from "../lib/qorex.ts";
 import { NET } from "../lib/qore.ts";
 import { PEOPLE } from "../../web/js/config.js";
 import { renderFeed, usd } from "../../web/js/feed.js";
@@ -493,7 +494,11 @@ function liveSetupFlow() {
           <p class="lead">Your wallet is ready on this device. Fund it with a real testnet transaction: open the QoreChain faucet, paste your address, and request tokens. It sends 100 test QOR and 1,000 fUSD.</p>
           <div class="addr-box glass"><span class="kicker">Your QoreChain address</span><code id="fund-addr">${acc.cosmos}</code><button class="btn-glass" data-copy="${acc.cosmos}">Copy address</button></div>
           <div class="tx-actions">
-            <a class="btn-primary block" href="https://dashboard.qorechain.io/faucet" target="_blank" rel="noopener">Open the QoreChain faucet ↗</a>
+            ${Q.qorexReady()
+              ? `<button class="btn-primary block" data-qorex>Fund from QoreX · 3 QOR + 50 fUSD</button>
+                 <a class="btn-glass block" href="https://dashboard.qorechain.io/faucet" target="_blank" rel="noopener">Or use the QoreChain faucet ↗</a>`
+              : `<a class="btn-primary block" href="https://dashboard.qorechain.io/faucet" target="_blank" rel="noopener">Open the QoreChain faucet ↗</a>
+                 <p class="fine center">Have the QoreX wallet? Open this page in a browser where QoreX is installed to fund it in one tap.</p>`}
             <p class="fine center"><span class="spinner"></span> Waiting for your test money to arrive… Friends can also send QOR to this address.</p>
             <p class="fine center">EVM address of the same wallet: <code>${short(acc.evm)}</code></p>
           </div>
@@ -501,6 +506,20 @@ function liveSetupFlow() {
       sh.body.querySelector("[data-copy]")!.addEventListener("click", async (e) => {
         await navigator.clipboard?.writeText((e.currentTarget as HTMLElement).dataset.copy!);
         toast("Address copied", "ok", 1800);
+      });
+      const qx = sh.body.querySelector<HTMLButtonElement>("[data-qorex]");
+      qx?.addEventListener("click", async () => {
+        qx.disabled = true;
+        qx.innerHTML = `<span class="spinner light"></span> Approve in QoreX…`;
+        try {
+          const res = await Q.fundFromQorex(acc!.cosmos, 3_000_000n, 50_000_000n);
+          qx.innerHTML = `✓ Sent from QoreX${res.shield === "shielded" ? " · signed with ML-DSA-87" : ""}`;
+          toast(`QoreX sent your test money (${res.shield})`, "ok", 4000);
+        } catch (e) {
+          qx.disabled = false;
+          qx.textContent = "Fund from QoreX · try again";
+          toast(friendly(e), "err", 6000);
+        }
       });
       while (!stop && (await A.qorBalance(acc.evm as Address).catch(() => 0n)) === 0n) await new Promise((r) => setTimeout(r, 4000));
       if (stop) return;
