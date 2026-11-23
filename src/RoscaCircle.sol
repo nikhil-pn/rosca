@@ -16,10 +16,12 @@ contract RoscaCircle {
     uint8 public constant MAX_MEMBERS = 50;
     /// @notice The Chit Funds Act 1982 caps the discount at 40% of the chit amount.
     uint16 public constant MAX_DISCOUNT_CAP_BPS = 4000;
-    /// @notice The same Act caps the foreman's commission at 5%.
+    /// @notice The Act allows the foreman a commission of up to 7%; Rosca caps the organiser's fee lower, at 5%.
     uint16 public constant MAX_FEE_BPS = 500;
     /// @notice Domain tag of the payout message a winner signs.
     bytes32 public constant PAYOUT_TAG = keccak256("ROSCA-PAYOUT-V1");
+    /// @notice Domain tag of the bid message a bidder signs.
+    bytes32 public constant BID_TAG = keccak256("ROSCA-BID-V1");
 
     // ---------------------------------------------------------------- types
 
@@ -83,7 +85,9 @@ contract RoscaCircle {
     mapping(address => uint256) public paidOut;
     mapping(address => uint256) public claimable;
     mapping(address => uint256) public security;
-    mapping(address => uint256) public onTimeRounds;
+    /// @notice How many rounds each member has paid (by paying, or from their security). A member must
+    /// have paid every round so far to bid or to be picked, so nobody can skip shares and still take a pot.
+    mapping(address => uint256) public roundsPaid;
 
     uint256 public totalClaimable;
     uint256 public totalSecurity;
@@ -253,7 +257,7 @@ contract RoscaCircle {
         paid[r][msg.sender] = true;
         rd.collected += share;
         paidIn[msg.sender] += share;
-        onTimeRounds[msg.sender] += 1;
+        roundsPaid[msg.sender] += 1;
 
         _pull(msg.sender, share);
         emit Paid(r, msg.sender, share);
@@ -280,16 +284,35 @@ contract RoscaCircle {
     event SecurityApplied(uint256 indexed round, address indexed member, uint256 amount);
     event AuctionClosed(uint256 indexed round, address indexed winner, uint256 discount, uint256 collected);
 
+    /// @notice True if `m` may bid for, or be picked for, round `r`: a member who has not won yet and
+    /// has paid every round up to and including `r`.
+    function isEligible(address m, uint256 r) public view returns (bool) {
+        return isMember[m] && !hasWon[m] && roundsPaid[m] == r;
+    }
+
+    /// @notice The exact bytes a member signs with their ML-DSA-87 key to bid `discount` in round `r`.
+    function bidMessage(uint256 r, address bidder, uint256 discount, uint256 deadline) public view returns (bytes memory) {
+        return abi.encode(BID_TAG, block.chainid, address(this), r, bidder, discount, deadline);
+    }
+
     /// @notice Bid the discount you accept to take this round's pot. A higher discount wins,
-    /// as in a chit fund auction. Only members who paid this round and have not won before can bid.
-    function bid(uint256 discount) external inPhase(Phase.Running) onlyMember {
+    /// as in a chit fund auction. Only members who have paid every round so far and have not won can
+    /// bid, and the bid carries the bidder's ML-DSA-87 signature: a stolen classical key cannot bid a
+    /// member into a costly discount.
+    function bid(uint256 discount, uint256 deadline, bytes calldata signature)
+        external
+        inPhase(Phase.Running)
+        onlyMember
+    {
         uint256 r = currentRound;
         Round storage rd = _rounds[r];
         if (rd.closed || block.timestamp > rd.bidEnd) revert TooLate(r);
-        if (hasWon[msg.sender] || !paid[r][msg.sender]) revert NotEligible(msg.sender);
+        if (!isEligible(msg.sender, r)) revert NotEligible(msg.sender);
         uint256 cap = maxDiscount();
         if (discount > cap) revert DiscountTooHigh(discount, cap);
         if (rd.bestBidder != address(0) && discount <= rd.bestDiscount) revert BidNotHigher(discount, rd.bestDiscount);
+        if (block.timestamp > deadline) revert Expired(deadline);
+        PqcGate.requireSignedBy(msg.sender, bidMessage(r, msg.sender, discount, deadline), signature);
 
         rd.bestBidder = msg.sender;
         rd.bestDiscount = discount;
@@ -315,6 +338,7 @@ contract RoscaCircle {
                 totalSecurity -= share;
                 paid[r][m] = true;
                 paidIn[m] += share;
+                roundsPaid[m] += 1;
                 rd.collected += share;
                 emit SecurityApplied(r, m, share);
             }
@@ -325,7 +349,7 @@ contract RoscaCircle {
         if (winner == address(0)) {
             for (uint256 i; i < n; ++i) {
                 address m = _members[i];
-                if (!hasWon[m] && paid[r][m]) {
+                if (isEligible(m, r)) {
                     winner = m;
                     break;
                 }
@@ -424,7 +448,7 @@ contract RoscaCircle {
             security[winner] += held;
             totalSecurity += held;
         }
-        _shareDividend(dividend, winner);
+        _shareDividend(dividend, winner, r);
 
         _push(recipient, payout);
         _push(organiser, fee);
@@ -438,14 +462,20 @@ contract RoscaCircle {
         }
     }
 
-    function _shareDividend(uint256 dividend, address winner) internal {
+    /// @dev The discount is shared among the members who paid round `r` (the winner always has),
+    /// so a member who skipped the round gets no share of it. Rounding dust goes to the winner.
+    function _shareDividend(uint256 dividend, address winner, uint256 r) internal {
         if (dividend == 0) return;
         uint256 n = _members.length;
-        uint256 each = dividend / n;
+        uint256 payers;
         for (uint256 i; i < n; ++i) {
-            claimable[_members[i]] += each;
+            if (paid[r][_members[i]]) ++payers;
         }
-        claimable[winner] += dividend - each * n;
+        uint256 each = dividend / payers;
+        for (uint256 i; i < n; ++i) {
+            if (paid[r][_members[i]]) claimable[_members[i]] += each;
+        }
+        claimable[winner] += dividend - each * payers;
         totalClaimable += dividend;
     }
 
