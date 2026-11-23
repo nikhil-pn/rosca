@@ -8,6 +8,7 @@ as written, then a second report after the findings are fixed.
 | 1, before fixes | 21 Nov 2026 | first factory, `src/` flattened | auto-detect (read as Ethereum) | 72 / 100 | High | not scored | [`stage-1-qcai-report.pdf`](stage-1-qcai-report.pdf) |
 | 2, after fixes | 22 Nov 2026 | factory v3, same command | auto-detect (read as Ethereum) | 72 / 100 | High | not scored | [`stage-2-qcai-report.pdf`](stage-2-qcai-report.pdf) |
 | **2, after fixes** | 22 Nov 2026 | factory v3, same code | **QoreChain (PQC)** | **78 / 100** | **Medium** | **Quantum-safe** | [`stage-2-qcai-report-qorechain.pdf`](stage-2-qcai-report-qorechain.pdf) |
+| **3, factory v4** | 23 Nov 2026 | factory v4 (signed bids, paid-every-round rule) | **QoreChain (PQC)** | **78 / 100** | **Medium** | **Quantum-safe** | [`stage-3-v4-qcai-report-qorechain.pdf`](stage-3-v4-qcai-report-qorechain.pdf) |
 
 Every run pastes `forge flatten src/RoscaFactory.sol` into dashboard.qorechain.io → AI Audit on the testnet. The first
 two runs used the default "auto-detect" setting, which read the Solidity as Ethereum code and skipped the
@@ -75,5 +76,13 @@ They are fixed in factory v4 [`0x36f0e01992b585df9f3752bca56a07dfcdf02817`](http
 | Member windows also allowed fUSD, so a stolen classical key could have moved a payout once it landed | Everyday windows reach only the circle; the fUSD approval uses a one-transaction window | The keeper's `fusd-transfer` and `classical-send` attempts, refused by the chain ([security page](https://rosca.exprmnts.fun/security)) |
 | The tests used a mock of the precompile | Real ML-DSA-87 vectors against the live `pqcVerify` | [`docs/PQC_VECTORS.md`](../docs/PQC_VECTORS.md) |
 
-73 tests pass. Stage 2 audited v3; the v4 code will be run through the auditor on the QoreChain setting as well, and the
-report added here.
+73 tests pass. The v4 code was run through the auditor on the QoreChain setting: **78/100, medium, quantum-safe** (stage 3
+in the table). Its findings and our answers:
+
+| # | Finding (QCAI severity) | Our assessment |
+| --- | --- | --- |
+| 1 | Relying on the ML-DSA-87 precompile; add a fallback if it fails (High) | `PqcGate` fails closed: it uses typed calls, which revert if the precompile is missing or returns nothing, and `requireSignedBy` reverts unless the result is `true`. A failed precompile can only stop a bid or a payout, never let one through. A software fallback verifier would add attack surface for no gain. |
+| 2 | Re-entrancy in token transfers (Medium) | As in stage 2: `nonReentrant`, state before transfers, malicious-token tests. |
+| 3 | Security handling at auction close (Medium) | As in stage 2: a share is taken from security only for a past winner who has not paid, and `security`, `totalSecurity`, `paid`, `paidIn` and `roundsPaid` change together. The invariants check it over 128,000 random actions. |
+| 4 | Bounds on parameters such as share and size (Low) | Size is capped at 50 members (`MAX_MEMBERS`); Solidity 0.8 reverts on overflow, and `testFuzz_quoteAlwaysAddsUpToThePot` covers the maths. |
+| 5 | ML-DSA-87 key required to join (Info) | Noted by the auditor as a positive feature. |
