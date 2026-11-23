@@ -15,10 +15,10 @@
 
 | Requirement | Where it is | How to check it |
 | --- | --- | --- |
-| **Scoped EVM window** | Every member's window is opened with `allowedTargets` = its circle and fUSD only, signed hybrid (secp256k1 + ML-DSA-87): [`web-src/lib/actions.ts`](web-src/lib/actions.ts) (`ensureWindow`), [`scripts/lib/evm.ts`](scripts/lib/evm.ts) | A real [window opened on chain](https://rosca.exprmnts.fun/tx/EB18C117114DE90F54D99C9249AFFA4A4D061BDA85EF0E0ACFF17BDB2DB60574): scoped to one circle and fUSD, 20 transactions, 3,000 blocks; every call in [`docs/PROOF.md`](docs/PROOF.md) went through such a window |
+| **Scoped EVM window** | Every member's everyday window is opened with `allowedTargets` = its circle only, signed hybrid (secp256k1 + ML-DSA-87); the fUSD approval gets its own one-transaction window: [`web-src/lib/actions.ts`](web-src/lib/actions.ts) (`ensureWindow`), [`scripts/lib/evm.ts`](scripts/lib/evm.ts) | A real [circle-only window](https://rosca.exprmnts.fun/tx/2EF5D2202ED5A5A855BCF5FB8268842D12AF92DA9D5AE5776A26CB6D5C6CAD96) on chain; an `fUSD.transfer` through it was refused by the chain ("the window does not list … as an allowed recipient"); the keeper repeats that attack after every payout ([security page](https://rosca.exprmnts.fun/security)) |
 | **`pqcVerify`** | [`src/libraries/PqcGate.sol`](src/libraries/PqcGate.sol) (`requireSignedBy`), called by `RoscaCircle.release`; the key comes from `pqcKeyStatus` (ML-DSA-87, proof of possession) | A real [ML-DSA-87 payout](https://rosca.exprmnts.fun/tx/0x68d8f0fbc11f8d18fe5001558b7eebe158c8e9d46db8f6b063087e83b0cadbea) and a [stolen-key payout that reverted](https://rosca.exprmnts.fun/tx/0x703be9e1d1178d89b97bab28c1ae29ce33377ddcfe8b7a5e72b589eae2d0f660) |
 | **Two-stage QCAI audit** | [`audit/`](audit/): both reports, every finding answered | Before fixes 72/100 (high); after fixes **78/100, medium, rated quantum-safe** |
-| **Foundry tests** | [`test/`](test/): 67 unit, fuzz and invariant tests (money conserved over 128,000 random actions) | `forge test` |
+| **Foundry tests** | [`test/`](test/): 73 unit, fuzz and invariant tests (money conserved over 128,000 random actions; stolen-key bids, skipped shares, replays) | `forge test` |
 | Public repo, MIT | [`LICENSE`](LICENSE) | |
 | README and cover | this file, [`media/cover.png`](media/cover.png) | |
 | Video, 3 minutes at most | on the [project page](https://build.qorechain.io/p/rosca) and the site's "Watch demo" | |
@@ -58,9 +58,9 @@ the money, and a key that is safe today can be broken by a quantum computer tomo
 ## What Rosca does
 
 - Members pay their monthly share into a pot that **no single key can move**, not even the organiser's.
-- Each month the members bid the discount they accept. The highest discount wins, as in a real chit fund auction, and the discount is shared out.
+- Each month the members bid the discount they accept, each bid **signed with the bidder's ML-DSA-87 key**. The highest discount wins, as in a real chit fund auction, and the discount is shared among the members who paid that round. Only members who paid every round can bid or be picked.
 - Paying out needs the winner's **ML-DSA-87** (post-quantum) signature, checked on chain with `pqcVerify`, and a majority of members.
-- A leaked classical (ECDSA) key alone can move nothing.
+- A leaked classical (ECDSA) key alone moves nothing: it cannot bid or collect (both need ML-DSA-87), cannot send a native transaction (the chain requires the hybrid signature) and cannot touch fUSD (each member's window reaches only their circle). The keeper tries all of this after every payout, and the chain refuses it.
 
 
 ## The app
@@ -105,8 +105,8 @@ to it with that hash.
 
 | What | Address |
 | --- | --- |
-| RoscaFactory v3 (new circles open here) | [`0x8197d7a6345b0b087976e5412629514719ccbd2f`](https://explore.qore.network/address/0x8197d7a6345b0b087976e5412629514719ccbd2f) |
-| RoscaFactory v2, v1 (their circles still play) | [`0x29053772…afef`](https://explore.qore.network/address/0x29053772f08c30c682e0fbb5db3a3d86ac84afef), [`0x366d6a02…7d39`](https://explore.qore.network/address/0x366d6a029d94a98ba4d93e2eb4dbf07720387d39) |
+| RoscaFactory v4 (new circles open here: signed bids, paid-every-round rule) | [`0x36f0e01992b585df9f3752bca56a07dfcdf02817`](https://explore.qore.network/address/0x36f0e01992b585df9f3752bca56a07dfcdf02817) |
+| RoscaFactory v3, v2, v1 (retired; their circles still play) | [`0x8197d7a6…ccbd2f`](https://explore.qore.network/address/0x8197d7a6345b0b087976e5412629514719ccbd2f), [`0x29053772…afef`](https://explore.qore.network/address/0x29053772f08c30c682e0fbb5db3a3d86ac84afef), [`0x366d6a02…7d39`](https://explore.qore.network/address/0x366d6a029d94a98ba4d93e2eb4dbf07720387d39) |
 | fUSD (the fest's test dollar) | [`0x97143B771D34ddb9130b807b135Ae675A5a963CA`](https://explore.qore.network/address/0x97143B771D34ddb9130b807b135Ae675A5a963CA) |
 | Organiser and deployer (the keeper) | `qor1pmzz6uld3gud6etn609pqgff2fnjlzswutxqyu` · `0x0eC42D73eD8a38DD6573d3ca10212952672F8A0e` |
 | Demo members | `qor1x5dahtmw7aa6vt5mgzeumlzgud7j0d8qnl4wr0`, `qor1yjl4gudedu3n7hv6fmxtmuk940g2nd7s9wrxd6`, `qor192vyu5t8walfqu665quhstkphslj394703mz4m` and two more ([`docs/PROOF.md`](docs/PROOF.md)) |

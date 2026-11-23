@@ -7,7 +7,8 @@ Open any link to see the transaction on the explorer.
 
 | What | Address |
 | --- | --- |
-| RoscaFactory v3 (audit fixes + fair dissolve) | [`0x8197d7a6345b0b087976e5412629514719ccbd2f`](https://explore.qore.network/address/0x8197d7a6345b0b087976e5412629514719ccbd2f) (deployed in [`0x8001ccb6…`](https://rosca.exprmnts.fun/tx/0x8001ccb6b4378b9011748b8bbe34ceaf4a08a4061c518b1a50767d01c5ac1c69)); new circles open here |
+| RoscaFactory v4 (signed bids, paid-every-round rule) | [`0x36f0e01992b585df9f3752bca56a07dfcdf02817`](https://explore.qore.network/address/0x36f0e01992b585df9f3752bca56a07dfcdf02817) (deployed in [`0xf2bf71c2…`](https://rosca.exprmnts.fun/tx/0xf2bf71c2079e3777c59d6bb4982b6971f850dd78561b528c2080329d8d6e7ab3)); new circles open here |
+| RoscaFactory v3 (audit fixes + fair dissolve) | [`0x8197d7a6345b0b087976e5412629514719ccbd2f`](https://explore.qore.network/address/0x8197d7a6345b0b087976e5412629514719ccbd2f) (deployed in [`0x8001ccb6…`](https://rosca.exprmnts.fun/tx/0x8001ccb6b4378b9011748b8bbe34ceaf4a08a4061c518b1a50767d01c5ac1c69)) |
 | RoscaFactory v2 (audit fixes) | [`0x29053772f08c30c682e0fbb5db3a3d86ac84afef`](https://explore.qore.network/address/0x29053772f08c30c682e0fbb5db3a3d86ac84afef) (deployed in [`0x38abe4b4…`](https://rosca.exprmnts.fun/tx/0x38abe4b41a22d1254b4b60df24c458cea7affe81002ccda60884ae44978e1f4e)) |
 | RoscaFactory v1 | [`0x366d6a029d94a98ba4d93e2eb4dbf07720387d39`](https://explore.qore.network/address/0x366d6a029d94a98ba4d93e2eb4dbf07720387d39) (deployed in [`0xe4d46037…`](https://rosca.exprmnts.fun/tx/0xe4d460379e0c7f80a154e3e05dd248fd3250fedbe6e6501b202ef1bd856316f1)) |
 | Test circle (5 members, 10 fUSD, 2-minute rounds) | [`0xF8cA79Bf91513e476D12d5B5B3eE92ac3806D561`](https://explore.qore.network/address/0xF8cA79Bf91513e476D12d5B5B3eE92ac3806D561) |
