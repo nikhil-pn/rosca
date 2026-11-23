@@ -27,6 +27,7 @@ import {
   type Hex,
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { fromHex, toBech32 } from "@cosmjs/encoding";
 import { circleAbi, factoryAbi } from "./abi.ts";
 import { NET, balances, broadcastAs, convertCoinMsg } from "./qore.ts";
 
@@ -45,6 +46,7 @@ const ERC20 = [
   { type: "function", name: "balanceOf", stateMutability: "view", inputs: [{ name: "a", type: "address" }], outputs: [{ type: "uint256" }] },
   { type: "function", name: "allowance", stateMutability: "view", inputs: [{ name: "o", type: "address" }, { name: "s", type: "address" }], outputs: [{ type: "uint256" }] },
   { type: "function", name: "approve", stateMutability: "nonpayable", inputs: [{ name: "s", type: "address" }, { name: "a", type: "uint256" }], outputs: [{ type: "bool" }] },
+  { type: "function", name: "transfer", stateMutability: "nonpayable", inputs: [{ name: "to", type: "address" }, { name: "v", type: "uint256" }], outputs: [{ type: "bool" }] },
 ] as const;
 
 // ---------------------------------------------------------------- reads
@@ -257,6 +259,37 @@ export async function steal(acc: UnifiedAccount, circle: Address): Promise<{ tx:
   });
   const receipt = await pub.waitForTransactionReceipt({ hash: tx });
   return { tx, status: receipt.status, stranger };
+}
+
+/**
+ * The thief's second move, after the payout lands: holding only the classical key, send the wallet's fUSD to a
+ * stranger (EVM), then send QOR natively with a classical-only signature. The chain refuses both before they reach a
+ * block; this returns its own words for each. (The member's window reaches only the circle.)
+ */
+export async function stealFromWallet(acc: UnifiedAccount, circle: Address): Promise<{ evm: string; native: string; amount: bigint }> {
+  await ensureWindow(acc, scope(circle), 1n);
+  const stranger = privateKeyToAccount(generatePrivateKey()).address;
+  const amount = await fusdBalance(acc.evm as Address);
+  const words = (e: unknown) => {
+    const x = e as { details?: string; shortMessage?: string; message?: string };
+    return String(x.details ?? x.shortMessage ?? x.message ?? e).replace(/^failed to broadcast transaction: /, "").replace(/\s*\[cosmossdk[^\]]*\]/g, "").split("\n")[0];
+  };
+  let evm = "", native = "";
+  try {
+    const h = await wallet(acc).writeContract({ address: NET.fusd, abi: ERC20, functionName: "transfer", args: [stranger, amount], gas: 100_000n, chain });
+    evm = `admitted?! ${h}`;
+  } catch (e) {
+    evm = words(e);
+  }
+  try {
+    const h = await broadcastAs(REST, acc, "classical", [
+      { typeUrl: "/cosmos.bank.v1beta1.MsgSend", value: { fromAddress: acc.cosmos, toAddress: toBech32("qor", fromHex(stranger.slice(2))), amount: [{ denom: "uqor", amount: "1000000" }] } },
+    ]);
+    native = `admitted?! ${h}`;
+  } catch (e) {
+    native = words(e).replace(/^tx \S+ failed \(code \d+\): /, "");
+  }
+  return { evm, native, amount };
 }
 
 // ---------------------------------------------------------------- live mode: real funding, real circles
